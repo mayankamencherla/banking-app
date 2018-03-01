@@ -86,6 +86,7 @@ const sendTransactionsResponse = async (req, res, token) => {
 
 
     // TODO: Do a dirty check and update only if different
+    // TODO: Save this into the transactions DB
     User.saveTransactions(transactions.results, req.user._id)
         .then((results) => {
             console.log('Saved user transactions in the DB');

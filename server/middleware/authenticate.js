@@ -38,7 +38,7 @@ const authenticate = (req, res, next) => {
 
         next();
     }).catch((e) => {
-        res.sendStatus(401).send('Unable to authenticate user'); // unauthorized
+        res.sendStatus(401); // unauthorized
     });
 };
 

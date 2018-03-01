@@ -7,10 +7,6 @@ const {DataAPIClient}        = require('truelayer-client');
 
 const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
-const {users, populateUsers} = require('@seed/seed');
-
-// run seed before each test case
-beforeEach(populateUsers);
 
 // Test for authentication flow
 describe('Authentication + Authorization via Truelayer', () => {
@@ -71,7 +67,7 @@ describe('Authentication + Authorization via Truelayer', () => {
                         refresh_token: process.env.REFRESH_TOKEN,
                     });
 
-            const response = require(__dirname + '/json/transactions.json');
+            const response = require(__dirname + '/json/info.json');
 
             // mock the get info API call to Truelayer
             nock('https://api.truelayer.com')
