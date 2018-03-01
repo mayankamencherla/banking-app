@@ -149,7 +149,11 @@ describe('Authentication + Authorization via Truelayer', () => {
 
                 const xAuthSet = res.header.hasOwnProperty('x-auth');
 
-                expect(xAuthSet).toEqual(false);
+                //
+                // This will be set to true, because token will be created
+                // in the step before gaining access to the user info
+                //
+                expect(xAuthSet).toEqual(true);
 
                 done();
             });

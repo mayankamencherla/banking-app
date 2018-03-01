@@ -166,7 +166,6 @@ const returnCallbackFailure = (req, res, traceCode) => {
 const runTokenValidations = (req, res, tokens) => {
 
     if ((typeof tokens === 'undefined') ||
-        (validator.isAlphanumeric(tokens.access_token) === false) ||
         (DataAPIClient.validateToken(tokens.access_token) === false)) {
 
         returnCallbackFailure(req, res, tracecodes.TOKEN_VALIDATION_FAILURE);

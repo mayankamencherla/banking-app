@@ -35,6 +35,11 @@ module.exports.controller = (app) => {
 
         const info = await service.getAuthenticatedUserInfo(req, res, tokens);
 
+        if (typeof info === 'undefined') {
+
+            return;
+        }
+
         res.json({"Info": info});
     });
 
