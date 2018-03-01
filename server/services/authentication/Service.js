@@ -11,6 +11,7 @@ const {tracecodes}                   = require('@tracecodes');
 
 const {AuthAPIClient, DataAPIClient} = require('truelayer-client');
 const envalid                        = require('envalid');
+const validator                      = require('validator');
 
 // Cleaning the environment variables, TODO: Move this out to a different file
 const env = envalid.cleanEnv(process.env, {
@@ -47,13 +48,22 @@ const getTruelayerAuthUrl = (req) => {
     return authUrl;
 };
 
-const getTruelayerAuthToken = async (req) => {
+const getTruelayerAuthToken = async (req, res) => {
 
-    logger.info({
+    var dataToLog = {
         code: tracecodes.AUTH_CALLBACK_REQUEST,
         url: req.originalUrl,
         query: req.query,
-    });
+    };
+
+    // When user does not authorize the app, error is sent as a query param
+    if ((req.query.hasOwnProperty('error') === true) ||
+        (validator.isAlphanumeric(req.query.code) === false)) {
+
+        returnCallbackFailure(dataToLog, res);
+    }
+
+    logger.info(dataToLog);
 
     const code = req.query.code;
 
@@ -61,6 +71,15 @@ const getTruelayerAuthToken = async (req) => {
     const tokens = await authClient.exchangeCodeForToken(env.REDIRECT_URI, code);
 
     return tokens;
+};
+
+const returnCallbackFailure = (dataToLog, res) => {
+
+    dataToLog.code = tracecodes.AUTH_CALLBACK_ERROR;
+
+    logger.info(dataToLog);
+
+    res.sendStatus(401);
 };
 
 const createNewAuthenticatedUser = (req, res, tokens) => {

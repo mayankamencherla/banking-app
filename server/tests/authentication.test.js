@@ -18,13 +18,43 @@ describe('Authentication + Authorization via Truelayer', () => {
     it('should redirect to truelayer auth page', (done) => {
 
         request(app)
-            .post('/')
+            .get('/')
             .end((err, res) => {
 
                 expect(res.header['location']).toBe('https://auth.truelayer.com/?response_type=code&client_id=interviewmayank-8nas&redirect_uri=http://localhost:3000/callback&scope=info%20accounts%20transactions%20offline_access&nonce=foobar&enable_mock=true');
 
                 done();
             });
+    });
+
+    it('should handle unauthorized callback from Truelayer', (done) => {
+
+        request(app)
+                .get('/callback?error=access_denied')
+                .expect(401)
+                .end((err, res) => {
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(false);
+
+                    done();
+                });
+    });
+
+    it('should fail validation for non alpha num code in callback', (done) => {
+
+        request(app)
+                .get('/callback?code=bakshdjbr34--asd')
+                .expect(401)
+                .end((err, res) => {
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(false);
+
+                    done();
+                });
     });
 
     it('should handle callback from Truelayer Authorization server', (done) => {
@@ -41,22 +71,27 @@ describe('Authentication + Authorization via Truelayer', () => {
                         refresh_token: process.env.REFRESH_TOKEN,
                     });
 
+            const response = require(__dirname + '/json/transactions.json');
+
             // mock the get info API call to Truelayer
             nock('https://api.truelayer.com')
                 .get('/data/v1/info')
                 .reply(
-                    200, {
-                        result: {
-                            // TODO: Fill this one out
-                        }
-                    });
+                    200, response
+                );
 
             request(app)
                 .get('/callback?code=2')
                 .expect(200)
                 .end((err, res) => {
 
-                    expect(res.body.Info.result).toEqual({});
+                    const results = res.body.Info;
+
+                    expect(results).toEqual(response);
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(true);
 
                     done();
                 });

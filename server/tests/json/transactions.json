@@ -1,0 +1,47 @@
+{
+  "results": [
+    {
+      "update_timestamp": "2018-03-01T18:09:55.6189997Z",
+      "full_name": "John Doe",
+      "addresses": [
+        {
+          "address": "1 Market Street",
+          "city": "San Francisco",
+          "zip": "94103",
+          "country": "USA"
+        }
+      ],
+      "emails": [
+        "john@doe.com"
+      ],
+      "phones": [
+        "02079460581",
+        "+14151234567"
+      ]
+    },
+    {
+      "update_timestamp": "2018-03-01T18:09:55.6190012Z",
+      "full_name": "Jane Doe",
+      "addresses": [
+        {
+          "address": "1 Market Street",
+          "city": "San Francisco",
+          "zip": "94103",
+          "country": "USA"
+        }
+      ],
+      "emails": [
+        "jane-business@doe.com",
+        "jane@doe.com",
+        "jane-other@doe.com"
+      ],
+      "phones": [
+        "02079460087",
+        "02079460087",
+        "+14151234567",
+        "+14151234567"
+      ]
+    }
+  ],
+  "status": "Succeeded"
+}

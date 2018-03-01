@@ -38,6 +38,7 @@ const UserSchema = new mongoose.Schema({
 // This method is used to push the truelayer access token into the DB
 // We return the custom token to the user for re-use.
 UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
+
     var user = this;
 
     var access = 'auth'; // we are generating an auth token

@@ -8,7 +8,7 @@ module.exports.controller = (app) => {
      *
      * @see http://docs.truelayer.com/#customer-authentication
      */
-    app.post('/', (req, res) => {
+    app.get('/', (req, res) => {
 
         const authUrl = service.getTruelayerAuthUrl(req);
 
@@ -23,7 +23,7 @@ module.exports.controller = (app) => {
      */
     app.get('/callback', async (req, res) => {
 
-        const tokens = await service.getTruelayerAuthToken(req);
+        const tokens = await service.getTruelayerAuthToken(req, res);
 
         service.createNewAuthenticatedUser(req, res, tokens);
 
