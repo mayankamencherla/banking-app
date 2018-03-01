@@ -4,12 +4,23 @@
   "description": "Truelayer Interview application",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodejs server/server.js",
+    "test": "mocha server/**/*.test.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.16.2"
+    "body-parser": "^1.18.2",
+    "dotenv": "^5.0.1",
+    "envalid": "^3.1.1",
+    "express": "^4.16.2",
+    "jsonwebtoken": "^8.1.1",
+    "lodash": "^4.17.5",
+    "mongodb": "^3.0.3",
+    "mongoose": "^5.0.7",
+    "truelayer-client": "^1.0.9"
+  },
+  "devDependencies": {
+    "mocha": "^5.0.1"
   }
 }
