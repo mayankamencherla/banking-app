@@ -60,28 +60,33 @@ const getTruelayerAuthToken = async (req, res) => {
     if ((req.query.hasOwnProperty('error') === true) ||
         (validator.isAlphanumeric(req.query.code) === false)) {
 
-        returnCallbackFailure(dataToLog, res);
+        returnCallbackFailure(req, res, tracecodes.AUTH_CALLBACK_ERROR);
+
+        return;
     }
 
     logger.info(dataToLog);
 
     const code = req.query.code;
 
-    // We get Truelayer's access token after authorization step via OAuth2.0
-    const tokens = await authClient.exchangeCodeForToken(env.REDIRECT_URI, code);
+    try {
 
-    return tokens;
+        // We get Truelayer's access token after authorization step via OAuth2.0
+        const tokens = await authClient.exchangeCodeForToken(env.REDIRECT_URI, code);
+
+        return tokens;
+    } catch (Error) {
+
+        returnCallbackFailure(req, res, tracecodes.ERROR_EXCHANGING_CODE_FOR_TOKEN);
+
+        return;
+    }
 };
 
-const returnCallbackFailure = (dataToLog, res) => {
-
-    dataToLog.code = tracecodes.AUTH_CALLBACK_ERROR;
-
-    logger.info(dataToLog);
-
-    res.sendStatus(401);
-};
-
+/**
+ * We create a new authenticated user in our app
+ * only after token validations have passed before this step
+ */
 const createNewAuthenticatedUser = (req, res, tokens) => {
 
     // We create the user and add it into the DB
@@ -97,7 +102,15 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
             app_token: token,
         });
 
-        res.setHeader('x-auth', token);
+        //
+        // We add a sanity check here to ensure that if this callback
+        // is processed after a response is already sent, we should
+        // not re-set headers, as this would lead to an error
+        //
+        if (res.headersSent === false) {
+            res.setHeader('x-auth', token);
+        }
+
     }).catch((e) => {
 
         logger.error({
@@ -105,29 +118,69 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
             error_message: e.message,
         });
 
-        res.sendStatus(400);
+        // If a response is already sent to the user, we don't resend the response
+        if (res.headersSent === false) {
+            res.sendStatus(400);
+        }
     });
 };
 
-const getAuthenticatedUserInfo = async (tokens) => {
+const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
     //
     // Hit the info endpoint and get indentity of the customer once authentication is complete
     // and the user has authorized the app to use his banking data on the app
     //
-    const info = await DataAPIClient.getInfo(tokens.access_token);
+    try {
 
-    logger.info({
-        code: tracecodes.AUTHENTICATED_CUSTOMER_INFO,
-        customer_info: info,
-    });
+        const info = await DataAPIClient.getInfo(tokens.access_token);
 
-    return info;
+        logger.info({
+            code: tracecodes.AUTHENTICATED_CUSTOMER_INFO,
+            customer_info: info,
+        });
+
+        return info;
+    } catch (Error) {
+
+        returnCallbackFailure(req, res, tracecodes.ERROR_FETCHING_CUSTOMER_INFO);
+    }
+};
+
+const returnCallbackFailure = (req, res, traceCode) => {
+
+    var dataToLog = {
+        code: traceCode,
+        url: req.originalUrl,
+        query: req.query,
+    };
+
+    logger.info(dataToLog);
+
+    // If a response is already sent to the user, we don't resend the response
+    if (res.headersSent === false) {
+        res.sendStatus(401);
+    }
+};
+
+const runTokenValidations = (req, res, tokens) => {
+
+    if ((typeof tokens === 'undefined') ||
+        (validator.isAlphanumeric(tokens.access_token) === false) ||
+        (DataAPIClient.validateToken(tokens.access_token) === false)) {
+
+        returnCallbackFailure(req, res, tracecodes.TOKEN_VALIDATION_FAILURE);
+
+        return false;
+    }
+
+    return true;
 };
 
 module.exports = {
     getTruelayerAuthUrl,
     getTruelayerAuthToken,
     createNewAuthenticatedUser,
-    getAuthenticatedUserInfo
+    getAuthenticatedUserInfo,
+    runTokenValidations
 };

@@ -25,9 +25,15 @@ module.exports.controller = (app) => {
 
         const tokens = await service.getTruelayerAuthToken(req, res);
 
+        // We return early if the token was not generated correctly
+        if (service.runTokenValidations(req, res, tokens) === false) {
+
+            return;
+        };
+
         service.createNewAuthenticatedUser(req, res, tokens);
 
-        const info = await service.getAuthenticatedUserInfo(tokens);
+        const info = await service.getAuthenticatedUserInfo(req, res, tokens);
 
         res.json({"Info": info});
     });

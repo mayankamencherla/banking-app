@@ -100,4 +100,59 @@ describe('Authentication + Authorization via Truelayer', () => {
             }
     });
 
+    it('should handle token exception case in callback flow', (done) => {
+
+        // Mock the token exchange API call to Truelayer
+        nock('https://auth.truelayer.com')
+            .post('/connect/token')
+            .reply(
+                404, {
+                    error: "request account not found"
+                });
+
+        request(app)
+            .get('/callback?code=2')
+            .expect(401)
+            .end((err, res) => {
+
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                expect(xAuthSet).toEqual(false);
+
+                done();
+            });
+    });
+
+    it('should handle token exception case in data info fetch flow', (done) => {
+
+        // Mock the token exchange API call to Truelayer
+        nock('https://auth.truelayer.com')
+            .post('/connect/token')
+            .reply(
+                200, {
+                    access_token: process.env.ACCESS_TOKEN,
+                    refresh_token: process.env.REFRESH_TOKEN,
+                });
+
+        // Mock the token exchange API call to Truelayer
+        nock('https://api.truelayer.com')
+            .get('/data/v1/info')
+            .reply(
+                404, {
+                    error: "invalid access token"
+                });
+
+        request(app)
+            .get('/callback?code=2')
+            .expect(401)
+            .end((err, res) => {
+
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                expect(xAuthSet).toEqual(false);
+
+                done();
+            });
+    });
+
 });
