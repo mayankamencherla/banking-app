@@ -18,6 +18,7 @@ const authenticate = (req, res, next) => {
     User.findByToken(token).then((user) => {
         if (!user){
 
+            // TODO: What if old token is sent? How do we handle the flow?
             logger.error({
                 code: tracecodes.USER_NOT_FOUND,
                 app_token: token,
@@ -33,7 +34,6 @@ const authenticate = (req, res, next) => {
         logger.info({
             code: tracecodes.AUTHENTICATED_USER_FOUND,
             app_token: token,
-            user_id: user._id
         });
 
         next();

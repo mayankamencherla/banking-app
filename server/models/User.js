@@ -49,6 +49,7 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
         user_id: user._id,
     });
 
+    // Reset the tokens array each time
     user.tokens = [];
 
     user.tokens.push({access, token, access_token, refresh_token});
