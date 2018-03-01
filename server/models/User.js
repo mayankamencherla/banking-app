@@ -50,7 +50,6 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
     logger.info({
         code: tracecodes.AUTH_TOKEN_GENERATION_REQUEST,
         app_token: token,
-        user_id: user._id,
     });
 
     // Reset the tokens array each time
