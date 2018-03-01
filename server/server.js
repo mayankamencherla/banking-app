@@ -36,3 +36,6 @@ fs.readdirSync(path.join(__dirname, 'controllers')).forEach((directory) => {
 server.listen(3000, () => {
 	console.log('Server is hosted on 3000');
 });
+
+// exporting for test cases
+module.exports = {app};

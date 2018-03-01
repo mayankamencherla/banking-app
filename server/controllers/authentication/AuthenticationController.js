@@ -8,7 +8,7 @@ module.exports.controller = (app) => {
      *
      * @see http://docs.truelayer.com/#customer-authentication
      */
-    app.get('/', (req, res) => {
+    app.post('/', (req, res) => {
 
         const authUrl = service.getTruelayerAuthUrl(req);
 

@@ -52,6 +52,7 @@ const getTruelayerAuthToken = async (req) => {
     logger.info({
         code: tracecodes.AUTH_CALLBACK_REQUEST,
         url: req.originalUrl,
+        query: req.query,
     });
 
     const code = req.query.code;
