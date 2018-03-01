@@ -1,9 +1,13 @@
-const mongoose = require('mongoose');
-const jwt      = require('jsonwebtoken');
+const {logger}                       = require('@log/logger');
+const {tracecodes}                   = require('@tracecodes');
+
+const mongoose                       = require('mongoose');
+const jwt                            = require('jsonwebtoken');
 
 /*----------------------------------------------------------------*/
 
 const UserSchema = new mongoose.Schema({
+    // TODO: Add an email, names and other relevant user data here
     tokens: [{
         access: {
             type: String,
@@ -39,6 +43,14 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
 
     var token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
 
+    logger.info({
+        code: tracecodes.AUTH_TOKEN_GENERATION_REQUEST,
+        app_token: token,
+        user_id: user._id,
+    });
+
+    user.tokens = [];
+
     user.tokens.push({access, token, access_token, refresh_token});
 
     return user.save().then(() => {
@@ -49,6 +61,12 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
 // This method is used to save the transactions into the DB
 UserSchema.statics.saveTransactions = function(results, id) {
     var User = this;
+
+    logger.info({
+        code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
+        transactions: results,
+        user_id: id
+    });
 
     // We update the transactions into the user's row in the DB
     return User.update({
@@ -65,6 +83,11 @@ UserSchema.statics.saveTransactions = function(results, id) {
 // We want to find the user by the custom token
 UserSchema.statics.findByToken = function(token) {
     var User = this; // Model method, so this = User model
+
+    logger.info({
+        code: tracecodes.FIND_USER_BY_TOKEN_REQUEST,
+        app_token: token,
+    });
 
     try {
         // We get the user id based on the web token

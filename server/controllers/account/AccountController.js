@@ -1,6 +1,8 @@
 // In-house files
-const {User}                         = require('./../../models/User');
-const {authenticate}                 = require('./../../middleware/authenticate');
+const {User}                         = require('@models/User');
+const {authenticate}                 = require('@middleware/authenticate');
+const {logger}                       = require('@log/logger');
+const {tracecodes}                   = require('@tracecodes');
 
 // 3rd party libraries
 const _                              = require('lodash');
@@ -20,26 +22,53 @@ const authClient = new AuthAPIClient();
 
 module.exports.controller = (app) => {
 
-    // This api must require authentication via the app token
+    /**
+     * This route is used to pull out the transactions for the
+     * specified account_id and save it into the DB for future usage.
+     */
     app.get('/account/:account_id/transactions', authenticate, async (req, res) => {
+
+        logger.info({
+            code: tracecodes.CUSTOMER_TRANSACTIONS_REQUEST,
+            url: req.originalUrl,
+            account_id: req.params.account_id,
+        });
+
         const token = req.user.tokens[0]; // TODO: Multiple tokens can exist
 
         if (!DataAPIClient.validateToken(token.access_token)) {
-            console.log('Invalid token');
+
+            logger.error({
+                code: tracecodes.EXPIRED_ACCESS_TOKEN,
+                url: req.originalUrl,
+                app_token: token.token,
+            });
 
             // get new access token and replace the existing token
             // What if wrong info passed here? exception handling??
             await authClient.refreshAccessToken(token.refresh_token)
                             .then((token) => {
+
+                                logger.info({
+                                    code: tracecodes.ACCESS_TOKEN_RENEWAL_SUCCESS,
+                                    url: req.originalUrl,
+                                });
+
                                 // TODO: Will the object destructure itself
                                 var user = new User(req.user);
 
                                 // we add the token back to the user model
-                                // TODO: how do we get the user object here?
+                                // TODO: how do we get the user object here? - set up logging
                                 user.generateAuthToken(token.access_token, token.refresh_token);
                             })
                             .catch((e) => {
-                                console.log('Error: ', e);
+
+                                logger.error({
+                                    code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
+                                    url: req.originalUrl,
+                                    error_message: e.message,
+                                });
+
                                 res.status(400).send('Unable to refresh access token');
                             });
         }
@@ -58,20 +87,50 @@ module.exports.controller = (app) => {
                 res.status(400).send('Unable to save transactions in User DB');
             });
 
+        logger.info({
+            code: tracecodes.CUSTOMER_TRANSACTIONS_RESPONSE,
+            url: req.originalUrl,
+            transactions: transactions,
+            app_token: token.token,
+            account_id: req.params.account_id,
+        });
+
         res.setHeader('x-auth', token.token);
         res.json({"Transactions": transactions});
     });
 
-    // This endpoint does needs authentication, but will not hit the Truelayer API
+    /**
+     * This route is used to pull out the transactions saved in the DB, and
+     * return the min, max and average of amounts grouped by transaction categories.
+     */
     app.get('/account/:account_id/amounts', authenticate, async (req, res) => {
 
+        logger.info({
+            code: tracecodes.CUSTOMER_ACCOUNT_STATS_REQUEST,
+            url: req.originalUrl,
+            account_id: req.params.account_id,
+        });
+
         const transactions = req.user.transactions;
+
+        // This route was called before saving transactions into the DB
+        if (transactions.length === 0) {
+
+            logger.error({
+                code: tracecodes.CUSTOMER_TRANSCTIONS_NOT_SAVED,
+                url: req.originalUrl,
+                account_id: req.params.account_id,
+            });
+
+            res.status(400).send('No transactions present for this customer. Make a request to /account/:account_id/tranasctions to get transaction data');
+        }
 
         // All the amounts are in GBP
         const groupedTransactions = _.groupBy(transactions, tran => tran.transaction_category);
 
         var responseObj = _.transform(groupedTransactions, (result, value, key) => {
 
+            // TODO: Is there a cleaner way to do this?
             var getMinMaxAve = (value) => {
                 var min = Number.MAX_VALUE, max = 0, average = 0, total = 0;
 
@@ -103,6 +162,14 @@ module.exports.controller = (app) => {
             return result;
 
         }, []);
+
+        logger.info({
+            code: tracecodes.CUSTOMER_ACCOUNT_STATS_RESPONSE,
+            url: req.originalUrl,
+            account_id: req.params.account_id,
+            app_token: req.user.tokens[0].token,
+            statistics: responseObj,
+        });
 
         // TODO: Don't cache the response in the browser, cache it in the app
         res.setHeader('x-auth', req.user.tokens[0].token);

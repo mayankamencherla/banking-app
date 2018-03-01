@@ -7,7 +7,7 @@
     "start": "nodejs server/server.js",
     "test": "mocha server/**/*.test.js"
   },
-  "author": "",
+  "author": "mayankamencherla",
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.18.2",
@@ -16,11 +16,21 @@
     "express": "^4.16.2",
     "jsonwebtoken": "^8.1.1",
     "lodash": "^4.17.5",
+    "module-alias": "^2.0.6",
     "mongodb": "^3.0.3",
     "mongoose": "^5.0.7",
-    "truelayer-client": "^1.0.9"
+    "truelayer-client": "^1.0.9",
+    "winston": "^2.4.0"
   },
   "devDependencies": {
     "mocha": "^5.0.1"
+  },
+  "_moduleAliases": {
+    "@models": "server/models",
+    "@middleware": "server/middleware",
+    "@db": "server/db",
+    "@controllers": "server/controllers",
+    "@log": "server/log",
+    "@tracecodes": "server/tracecodes/tracecodes"
   }
 }

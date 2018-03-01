@@ -1,6 +1,9 @@
+// Registering aliases throughout the server side application
+require("module-alias/register");
+
 // In-house files
-const {User}                         = require('./models/User');
-const {mongoose}                     = require('./db/mongoose');
+const {User}                         = require('@models/User');
+const {mongoose}                     = require('@db/mongoose');
 
 // built in libraries
 const fs                             = require('fs');
@@ -19,6 +22,7 @@ const server         = http.createServer(app);
 // We ensure that every request is a json, as this is a JSON API
 app.use(bodyParser.json());
 
+// We go over all the directories in the controllers directory and file controller files
 fs.readdirSync(path.join(__dirname, 'controllers')).forEach((directory) => {
     fs.readdirSync(path.join(__dirname, 'controllers', directory)).forEach((file) => {
         if (file.substr(-3) === '.js') {
