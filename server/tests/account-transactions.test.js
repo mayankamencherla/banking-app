@@ -1,5 +1,7 @@
 require('dotenv').config();
 
+const jwt                    = require('jsonwebtoken');
+const {ObjectID}             = require('mongodb');
 const expect                 = require('expect');
 const request                = require('supertest');
 const nock                   = require('nock');
@@ -19,9 +21,42 @@ describe('Fetching account transactions', () => {
         //
         // x-auth token not sent
         // So middleware sends back a 401
+        // as an exception will be caught
         //
         request(app)
             .get('/account/1/transactions')
+            .expect(401)
+            .end(done);
+    });
+
+    it('should assert that authentication fails and user not found', (done) => {
+
+        //
+        // x-auth token sent
+        // So middleware sends back a 401
+        //
+        request(app)
+            .get('/account/1/transactions')
+            .set('x-auth', 'random token')
+            .expect(401)
+            .end(done);
+    });
+
+    it('should assert that user not found with invalid jwt token', (done) => {
+
+        var access = 'auth'; // we are generating an auth token
+
+        var objectToTokenify = {_id: (new ObjectID()).toHexString(), access};
+
+        const token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
+
+        //
+        // x-auth token sent
+        // So middleware sends back a 401
+        //
+        request(app)
+            .get('/account/1/transactions')
+            .set('x-auth', token)
             .expect(401)
             .end(done);
     });
