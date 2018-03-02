@@ -94,6 +94,8 @@ const sendTransactionsResponse = async (req, res, token) => {
             account_id: req.params.account_id,
         });
 
+        // We save the transactions to the DB
+        // TODO: Optimize this and save only if not already saved
         await saveAccountTransactionsToUser(req, transactions, token);
 
         res.setHeader('x-auth', token.token);
@@ -125,7 +127,7 @@ const saveAccountTransactionsToUser = async (req, transactions, token) => {
             logger.info({
                 code: tracecodes.CUSTOMER_TRANSACTIONS_NOT_SAVED,
                 url: req.originalUrl,
-                error: e.message,
+                error: e,
                 app_token: token.token,
                 account_id: req.params.account_id,
             });
@@ -218,5 +220,6 @@ module.exports = {
     refreshTokenIfExpired,
     sendTransactionsResponse,
     handleTransactionsEmpty,
-    getTxnCategoryStats
+    getTxnCategoryStats,
+    saveAccountTransactionsToUser
 };

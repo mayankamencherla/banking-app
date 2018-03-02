@@ -10,6 +10,7 @@ const {ObjectID}             = require('mongodb');
 const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
 const {users, populateUsers} = require('@seed/seed');
+const service                = require('@services/account/Service');
 
 // run seed before each test case
 beforeEach(populateUsers);
@@ -184,5 +185,33 @@ describe('Test account transactions', () => {
             done();
         }
 
+    });
+
+    it('should not save transactions without results as main key of response json', (done) => {
+
+        req = {
+            originalUrl: '/account/1/transactions',
+            params: {
+                account_id: 1
+            },
+            user: {
+                _id: users[2]._id,
+            }
+        };
+
+        res = {
+            statusCode: 200,
+            sendStatusCode: (statusCode) => {
+                this.statusCode = statusCode;
+            }
+        };
+
+        const transactions = require('./json/transactions.json');
+
+        service.saveAccountTransactionsToUser(req, transactions.results, users[2].tokens[0]);
+
+        // Assert that the user doesn't have any transactions saved in the DB
+
+        done();
     });
 });

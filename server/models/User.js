@@ -107,7 +107,13 @@ UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_to
 
 // This method is used to save the transactions into the DB
 UserSchema.statics.saveTransactions = async function(results, id) {
+
     var User = this;
+
+    if (typeof results === 'undefined') {
+
+        return Promise.reject();
+    }
 
     logger.info({
         code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
