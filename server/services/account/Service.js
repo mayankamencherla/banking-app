@@ -145,7 +145,7 @@ const handleTransactionsEmpty = (req, res, transactions) => {
             account_id: req.params.account_id,
         });
 
-        res.status(400).send('No transactions present for this customer. Make a request to /account/:account_id/tranasctions to get transaction data');
+        res.sendStatus(400);
     }
 };
 
