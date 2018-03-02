@@ -3,6 +3,7 @@ const {tracecodes}                   = require('@tracecodes');
 
 const mongoose                       = require('mongoose');
 const jwt                            = require('jsonwebtoken');
+const {DataAPIClient}                = require('truelayer-client');
 
 /*----------------------------------------------------------------*/
 
@@ -54,11 +55,9 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
     });
 
     // Reset the tokens array each time
-    user.tokens = [];
-
     const newToken = {access, token, access_token, refresh_token};
 
-    user.tokens.push(newToken);
+    user.tokens = [newToken];
 
     return user.save().then(() => {
 

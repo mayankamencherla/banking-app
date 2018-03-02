@@ -106,6 +106,7 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
         // We add a sanity check here to ensure that if this callback
         // is processed after a response is already sent, we should
         // not re-set headers, as this would lead to an error
+        // TODO: This is not the right way to handle things -> better to return in one place
         //
         if (res.headersSent === false) {
             res.setHeader('x-auth', token.token);
@@ -115,7 +116,7 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
 
         logger.error({
             code: tracecodes.APP_AUTH_TOKEN_GENERATION_FAILED,
-            error_message: e.message,
+            error: e
         });
 
         // If a response is already sent to the user, we don't resend the response

@@ -34,6 +34,7 @@ const tracecodes = {
     SAVE_TRANSACTIONS_REQUEST        : 'SAVE_TRANSACTIONS_REQUEST',
     FIND_USER_BY_TOKEN_REQUEST       : 'FIND_USER_BY_TOKEN_REQUEST',
     DB_CONNECTION_REQUEST            : 'DB_CONNECTION_REQUEST',
+    SAVING_USER_TO_DB                : 'SAVING_USER_TO_DB',
 }
 
 module.exports ={tracecodes};

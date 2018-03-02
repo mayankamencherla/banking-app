@@ -7,6 +7,7 @@ const {DataAPIClient}        = require('truelayer-client');
 
 const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
+const service                = require('@services/authentication/Service');
 
 // Test for authentication flow
 describe('Authentication + Authorization via Truelayer', () => {
@@ -36,6 +37,27 @@ describe('Authentication + Authorization via Truelayer', () => {
 
                     done();
                 });
+    });
+
+    it('should not create new authenticated user', (done) => {
+
+        var req = {};
+
+        var res = {
+            headersSent: false,
+            statusCode: 200,
+            sendStatus: (statusCode) => {
+                this.statusCode = statusCode;
+            }
+        };
+
+        var tokens = {};
+
+        service.createNewAuthenticatedUser(req, res, tokens);
+
+        // Get all users and ensure the number of users are still the same as the ones seeded by the seeder
+
+        done();
     });
 
     it('should fail validation for non alpha num code in callback', (done) => {
