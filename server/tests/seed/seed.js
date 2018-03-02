@@ -10,6 +10,8 @@ const userOneId   = new ObjectID();
 const userTwoId   = new ObjectID();
 const userThreeId = new ObjectID();
 
+const transactions = require('./../json/transactions.json');
+
 const users = [{
     _id: userOneId,
     // email: "mayank@gmail.com"
@@ -22,7 +24,8 @@ const users = [{
         token: jwt.sign({_id: userTwoId, access: 'auth'}, process.env.JWT_SECRET).toString(),
         access_token: process.env.ACCESS_TOKEN,
         refresh_token: process.env.REFRESH_TOKEN
-    }]
+    }],
+    transactions: transactions.results,
 }, {
     _id: userThreeId,
     // email: "mayankamencherla@gmail.com",
@@ -31,7 +34,8 @@ const users = [{
         token: jwt.sign({_id: userThreeId, access: 'auth'}, process.env.JWT_SECRET).toString(),
         access_token: "random_access_token_that_will_fail_renewal",
         refresh_token: "random_refresh_token_that_will_fail_renewal"
-    }]
+    }],
+    transactions: [],
 }];
 
 const populateUsers = (done) => {

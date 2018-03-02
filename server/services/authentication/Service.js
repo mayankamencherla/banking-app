@@ -92,8 +92,6 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
     // We create the user and add it into the DB
     const user = new User();
 
-    console.log(tokens);
-
     user.save().then(() => {
 
         return user.generateAuthToken(tokens.access_token, tokens.refresh_token);

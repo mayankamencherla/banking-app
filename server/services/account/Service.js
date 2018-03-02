@@ -134,19 +134,15 @@ const saveAccountTransactionsToUser = async (req, transactions, token) => {
         });
 };
 
-const handleTransactionsEmpty = (req, res, transactions) => {
+const handleTransactionsEmpty = (req, res) => {
 
-    // This route was called before saving transactions into the DB
-    if (transactions.length === 0) {
+    logger.error({
+        code: tracecodes.CUSTOMER_TRANSCTIONS_NOT_SAVED,
+        url: req.originalUrl,
+        account_id: req.params.account_id,
+    });
 
-        logger.error({
-            code: tracecodes.CUSTOMER_TRANSCTIONS_NOT_SAVED,
-            url: req.originalUrl,
-            account_id: req.params.account_id,
-        });
-
-        res.sendStatus(400);
-    }
+    res.sendStatus(400);
 };
 
 const getTxnCategoryStats = (req, transactions) => {

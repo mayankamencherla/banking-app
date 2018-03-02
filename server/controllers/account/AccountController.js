@@ -45,14 +45,19 @@ module.exports.controller = (app) => {
 
         const transactions = req.user.transactions;
 
-        // Return early if transactions are not saved in the DB
-        service.handleTransactionsEmpty(req, res, transactions);
+        if (transactions.length === 0) {
+
+            // Return early if transactions are not saved in the DB
+            service.handleTransactionsEmpty(req, res);
+
+            return;
+        }
 
         const responseObj = service.getTxnCategoryStats(req, transactions);
 
         // TODO: Don't cache the response in the browser, cache it in the app
         res.setHeader('x-auth', req.user.tokens[0].token);
-        res.json({"Transaction Statistics": responseObj});
+        res.json({"Statistics": responseObj});
     });
 
 };

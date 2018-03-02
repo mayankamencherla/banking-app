@@ -1,0 +1,30 @@
+[
+    {
+      "INTEREST": {
+        "min": 0.77,
+        "max": 0.77,
+        "average": 0.77
+      }
+    },
+    {
+      "FEE_CHARGE": {
+        "min": 6,
+        "max": 6,
+        "average": 6
+      }
+    },
+    {
+      "DIRECT_DEBIT": {
+        "min": 24.25,
+        "max": 148,
+        "average": 68.72666666666667
+      }
+    },
+    {
+      "CREDIT": {
+        "min": 12345.67,
+        "max": 12345.67,
+        "average": 12345.67
+      }
+    }
+  ]
