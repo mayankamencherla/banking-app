@@ -5,9 +5,10 @@ const {User}                         = require('@models/User');
 
 const jwt                            = require('jsonwebtoken');
 
-// Generate object ID's for the 2 user objects to be seeded into the DB
-const userOneId = new ObjectID();
-const userTwoId = new ObjectID();
+// Generate object ID's for the 3 user objects to be seeded into the DB
+const userOneId   = new ObjectID();
+const userTwoId   = new ObjectID();
+const userThreeId = new ObjectID();
 
 const users = [{
     _id: userOneId,
@@ -22,6 +23,15 @@ const users = [{
         access_token: process.env.ACCESS_TOKEN,
         refresh_token: process.env.REFRESH_TOKEN
     }]
+}, {
+    _id: userThreeId,
+    // email: "mayankamencherla@gmail.com",
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userThreeId, access: 'auth'}, process.env.JWT_SECRET).toString(),
+        access_token: "random_access_token_that_will_fail_renewal",
+        refresh_token: "random_refresh_token_that_will_fail_renewal"
+    }]
 }];
 
 const populateUsers = (done) => {
@@ -30,8 +40,9 @@ const populateUsers = (done) => {
 
         var userOne = new User(users[0]).save();
         var userTwo = new User(users[1]).save();
+        var userThree = new User(users[2]).save();
 
-        return Promise.all([userOne, userTwo]);
+        return Promise.all([userOne, userTwo, userThree]);
     })
     .then(() => done());
 };

@@ -99,10 +99,7 @@ describe('Authentication + Authorization via Truelayer', () => {
         // Mock the token exchange API call to Truelayer
         nock('https://auth.truelayer.com')
             .post('/connect/token')
-            .reply(
-                404, {
-                    error: "request account not found"
-                });
+            .reply(404, {error: "request account not found"});
 
         request(app)
             .get('/callback?code=2')

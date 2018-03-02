@@ -11,15 +11,13 @@ module.exports.controller = (app) => {
      */
     app.get('/account/:account_id/transactions', authenticate, async (req, res) => {
 
-        logger.info({
-            code: tracecodes.CUSTOMER_TRANSACTIONS_REQUEST,
-            url: req.originalUrl,
-            account_id: req.params.account_id,
-        });
+        //
+        // This is an async call, as we make an async API call,
+        // we also make an async update call to the DB, if needed.
+        //
+        await service.refreshTokenIfExpired(req, res, req.user.tokens[0]);
 
-        const token = req.user.tokens[0]; // TODO: Multiple tokens can exist
-
-        service.refreshTokenIfExpired(req, res, token);
+        const token = req.user.tokens[0];
 
         const transactions = await service.sendTransactionsResponse(req, res, token);
 

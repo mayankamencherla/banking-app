@@ -39,49 +39,48 @@ const refreshTokenIfExpired = async (req, res, token) => {
         // get new access token and replace the existing token
         // What if wrong info passed here? exception handling??
         await authClient.refreshAccessToken(token.refresh_token)
-                        .then((token) => {
+                        .then(async (token) => {
 
                             logger.info({
                                 code: tracecodes.ACCESS_TOKEN_RENEWAL_SUCCESS,
                                 url: req.originalUrl,
                             });
 
-                            // TODO: Will the object destructure itself
-                            var user = new User(req.user);
-
                             // we add the token back to the user model
-                            // TODO: how do we get the user object here? - set up logging
-                            user.generateAuthToken(token.access_token, token.refresh_token);
-                        })
-                        .then( async (token) => {
+                            await User.updateAuthToken(req.user._id, token.access_token, token.refresh_token)
+                                    .then((token) => {
 
-                            // TODO: This flow is completely broken
+                                        logger.info({
+                                            code: tracecodes.APP_AUTH_TOKEN_GENERATED,
+                                            app_token: token.token,
+                                        });
 
-                            logger.info({
-                                code: tracecodes.APP_AUTH_TOKEN_GENERATED,
-                                app_token: token,
-                            });
+                                        req.user.tokens[0] = token;
 
-                            const transactions = await sendTransactionsResponse(req, res, token);
-
-                            // TODO: Check if this flow works correctly
-
-                            res.json({"Transactions": transactions});
+                                        return;
+                                    });
                         })
                         .catch((e) => {
 
                             logger.error({
                                 code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
                                 url: req.originalUrl,
-                                error_message: e.message,
+                                error: e
                             });
 
-                            res.status(400).send('Unable to refresh access token');
+                            // Bad request
+                            res.sendStatus(400);
                         });
     }
 };
 
 const sendTransactionsResponse = async (req, res, token) => {
+
+    // Return early if a token validation failure happened earlier in the flow
+    if (res.headersSent !== false) {
+
+        return;
+    }
 
     try {
 
@@ -95,7 +94,7 @@ const sendTransactionsResponse = async (req, res, token) => {
             account_id: req.params.account_id,
         });
 
-        saveAccountTransactionsToUser(req, transactions, token);
+        await saveAccountTransactionsToUser(req, transactions, token);
 
         res.setHeader('x-auth', token.token);
 
@@ -106,11 +105,11 @@ const sendTransactionsResponse = async (req, res, token) => {
     }
 };
 
-const saveAccountTransactionsToUser = (req, transactions, token) => {
+const saveAccountTransactionsToUser = async (req, transactions, token) => {
 
     // TODO: Do a dirty check and update only if different
     // TODO: Save this into the transactions DB
-    User.saveTransactions(transactions.results, req.user._id)
+    await User.saveTransactions(transactions.results, req.user._id)
         .then((results) => {
 
             logger.info({

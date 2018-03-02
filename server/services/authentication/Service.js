@@ -99,7 +99,7 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
 
         logger.info({
             code: tracecodes.APP_AUTH_TOKEN_GENERATED,
-            app_token: token,
+            app_token: token.token,
         });
 
         //
@@ -108,7 +108,7 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
         // not re-set headers, as this would lead to an error
         //
         if (res.headersSent === false) {
-            res.setHeader('x-auth', token);
+            res.setHeader('x-auth', token.token);
         }
 
     }).catch((e) => {

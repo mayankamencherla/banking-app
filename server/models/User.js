@@ -56,15 +56,58 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
     // Reset the tokens array each time
     user.tokens = [];
 
-    user.tokens.push({access, token, access_token, refresh_token});
+    const newToken = {access, token, access_token, refresh_token};
+
+    user.tokens.push(newToken);
 
     return user.save().then(() => {
-        return token;
+
+        logger.info({
+            code: tracecodes.AUTH_TOKEN_GENERATION_SUCCESS,
+            app_token: token,
+        });
+
+        return newToken;
     });
 };
 
+UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_token) {
+
+    var User = this;
+
+    var access = 'auth'; // we are generating an auth token
+
+    // we get the web token based on the user._id attribute
+    var objectToTokenify = {_id: id.toHexString(), access};
+
+    var token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
+
+    logger.info({
+        code: tracecodes.AUTH_TOKEN_UPDATE_REQUEST,
+        app_token: token,
+    });
+
+    const tokens = [{access, token, access_token, refresh_token}];
+
+    return await User.update({
+                    _id: id
+                }, {
+                    $set: {
+                        tokens: tokens
+                    }
+                }).then(() => {
+
+                    logger.info({
+                        code: tracecodes.AUTH_TOKEN_UPDATE_SUCCESS,
+                        app_token: token,
+                    });
+
+                    return tokens[0];
+                });
+}
+
 // This method is used to save the transactions into the DB
-UserSchema.statics.saveTransactions = function(results, id) {
+UserSchema.statics.saveTransactions = async function(results, id) {
     var User = this;
 
     logger.info({
@@ -73,14 +116,15 @@ UserSchema.statics.saveTransactions = function(results, id) {
         user_id: id
     });
 
-    // We update the transactions into the user's row in the DB
-    return User.update({
+    // We update the transactions into the user's row in the DB in async fashion
+    return await User.update({
                     _id: id
                 }, {
                     $set: {
                         transactions: results
                     }
                 }).then(() => {
+
                     return results;
                 });
 };

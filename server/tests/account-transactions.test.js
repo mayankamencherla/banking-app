@@ -75,8 +75,9 @@ describe('Fetching account transactions', () => {
             request(app)
                 .get('/account/1/transactions')
                 .set('x-auth', users[1].tokens[0].token)
-                .expect(200)
                 .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(200);
 
                     const results = res.body.Transactions;
 
@@ -93,7 +94,68 @@ describe('Fetching account transactions', () => {
         }
     });
 
-    // it('should fail token validation and create new token and fetch transactions', (done) => {
+    it('should fail token validation and fail renewal', (done) => {
 
-    // });
+        // We want to run this test case only with a valid token in the env
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            nock('https://auth.truelayer.com')
+                .post('/connect/token')
+                .reply(400, {error: "invalid renewal token"});
+
+            request(app)
+                .get('/account/2/transactions')
+                .set('x-auth', users[2].tokens[0].token)
+                .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(400);
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(false);
+
+                    done();
+                });
+        } else {
+            done();
+        }
+
+    });
+
+    it('should renew token and return transactions', (done) => {
+
+        // We want to run this test case only with a valid token in the env
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            nock('https://auth.truelayer.com')
+                .post('/connect/token')
+                .reply(200, {
+                    access_token: process.env.ACCESS_TOKEN,
+                    refresh_token: process.env.REFRESH_TOKEN,
+                });
+
+            const response = require(__dirname + '/json/transactions.json');
+
+            nock('https://api.truelayer.com')
+                .get('/data/v1/accounts/3/transactions')
+                .reply(200, response)
+
+            request(app)
+                .get('/account/3/transactions')
+                .set('x-auth', users[2].tokens[0].token)
+                .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(200);
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(true);
+
+                    done();
+                });
+        } else {
+            done();
+        }
+
+    });
 });
