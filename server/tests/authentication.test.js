@@ -119,38 +119,45 @@ describe('Authentication + Authorization via Truelayer', () => {
 
     it('should handle token exception case in data info fetch flow', (done) => {
 
-        // Mock the token exchange API call to Truelayer
-        nock('https://auth.truelayer.com')
-            .post('/connect/token')
-            .reply(
-                200, {
-                    access_token: process.env.ACCESS_TOKEN,
-                    refresh_token: process.env.REFRESH_TOKEN,
+        // We want to run this test case only with a valid token in the env
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            // Mock the token exchange API call to Truelayer
+            nock('https://auth.truelayer.com')
+                .post('/connect/token')
+                .reply(
+                    200, {
+                        access_token: process.env.ACCESS_TOKEN,
+                        refresh_token: process.env.REFRESH_TOKEN,
+                    });
+
+            // Mock the token exchange API call to Truelayer
+            nock('https://api.truelayer.com')
+                .get('/data/v1/info')
+                .reply(
+                    404, {
+                        error: "invalid access token"
+                    });
+
+            request(app)
+                .get('/callback?code=2')
+                .expect(401)
+                .end((err, res) => {
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    //
+                    // This will be set to true, because token will be created
+                    // in the step before gaining access to the user info
+                    //
+                    expect(xAuthSet).toEqual(true);
+
+                    done();
                 });
 
-        // Mock the token exchange API call to Truelayer
-        nock('https://api.truelayer.com')
-            .get('/data/v1/info')
-            .reply(
-                404, {
-                    error: "invalid access token"
-                });
-
-        request(app)
-            .get('/callback?code=2')
-            .expect(401)
-            .end((err, res) => {
-
-                const xAuthSet = res.header.hasOwnProperty('x-auth');
-
-                //
-                // This will be set to true, because token will be created
-                // in the step before gaining access to the user info
-                //
-                expect(xAuthSet).toEqual(true);
-
-                done();
-            });
+        } else {
+            done();
+        }
     });
 
 });

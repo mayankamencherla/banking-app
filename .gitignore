@@ -3,4 +3,4 @@ node_modules
 .env
 package-lock.json
 debug.log
-exception.log
+.nyc_output

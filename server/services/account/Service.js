@@ -28,7 +28,7 @@ const authClient = new AuthAPIClient();
  */
 const refreshTokenIfExpired = async (req, res, token) => {
 
-    if (!DataAPIClient.validateToken(token.access_token)) {
+    if (DataAPIClient.validateToken(token.access_token) === false) {
 
         logger.error({
             code: tracecodes.EXPIRED_ACCESS_TOKEN,

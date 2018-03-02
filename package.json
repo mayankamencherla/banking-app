@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodejs server/server.js",
-    "test": "mocha server/**/*.test.js --exit"
+    "test": "nyc --reporter=text mocha server/**/*.test.js --exit"
   },
   "author": "mayankamencherla",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "expect": "^22.4.0",
     "mocha": "^5.0.1",
     "nock": "^9.2.3",
+    "nyc": "^11.4.1",
     "supertest": "^3.0.0"
   },
   "_moduleAliases": {
