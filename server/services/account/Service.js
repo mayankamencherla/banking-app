@@ -24,7 +24,10 @@ const env = envalid.cleanEnv(process.env, {
 const authClient = new AuthAPIClient();
 
 /**
- * We only save 1 valid token at a time
+ * If a user makes a request with an expired Truelayer access token,
+ * we must exchange the refresh token for a new access token.
+ *
+ * @see http://docs.truelayer.com/#renew-the-access_token
  */
 const refreshTokenIfExpired = async (req, res, token) => {
 
@@ -46,7 +49,7 @@ const refreshTokenIfExpired = async (req, res, token) => {
                                 url: req.originalUrl,
                             });
 
-                            // we add the token back to the user model
+                            // we replace the old token with the new token
                             await User.updateAuthToken(req.user._id, token.access_token, token.refresh_token)
                                     .then((token) => {
 
@@ -55,6 +58,8 @@ const refreshTokenIfExpired = async (req, res, token) => {
                                             app_token: token.token,
                                         });
 
+                                        // The new token is set in the request for
+                                        // later usage in the transaction fetch flow
                                         req.user.tokens[0] = token;
 
                                         return;
@@ -74,6 +79,11 @@ const refreshTokenIfExpired = async (req, res, token) => {
     }
 };
 
+/**
+ * An async wrapper over Truelayer's getTransactions SDK method
+ *
+ * @see http://docs.truelayer.com/#retrieve-account-transactions
+ */
 const sendTransactionsResponse = async (req, res, token) => {
 
     // Return early if a token validation failure happened earlier in the flow
@@ -107,6 +117,9 @@ const sendTransactionsResponse = async (req, res, token) => {
     }
 };
 
+/**
+ * We must save the fetched transactions to the DB
+ */
 const saveAccountTransactionsToUser = async (req, transactions, token) => {
 
     // TODO: Do a dirty check and update only if different
@@ -136,6 +149,11 @@ const saveAccountTransactionsToUser = async (req, transactions, token) => {
         });
 };
 
+/**
+ * Logs that the transactions response is empty, and sends a 400 to the user
+ * This case happens when the user hits the statistics route before fetching
+ * all of his transactions from the transactions route.
+ */
 const handleTransactionsEmpty = (req, res) => {
 
     logger.error({
@@ -147,6 +165,9 @@ const handleTransactionsEmpty = (req, res) => {
     res.sendStatus(400);
 };
 
+/**
+ * Computes the {min, max, ave} values for each transaction category
+ */
 const getTxnCategoryStats = (req, transactions) => {
 
     // All the amounts are in GBP
@@ -198,6 +219,9 @@ const getTxnCategoryStats = (req, transactions) => {
     return responseObj;
 };
 
+/**
+ * This method is used to log api failures and send a 400 to the user
+ */
 const returnApiFailure = (req, res, error) => {
 
     var dataToLog = {

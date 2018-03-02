@@ -28,6 +28,9 @@ const authClient = new AuthAPIClient();
 // @see http://docs.truelayer.com/#permissions
 const scopes = ['info', 'accounts', 'transactions', 'offline_access'];
 
+/**
+ * A wrapper over Truelayer's getAuthUrl method in the SDK
+ */
 const getTruelayerAuthUrl = (req) => {
 
     logger.info({
@@ -48,6 +51,12 @@ const getTruelayerAuthUrl = (req) => {
     return authUrl;
 };
 
+/**
+ * The callback url gets a code as one of the GET parameters,
+ * which must be used in exchange for Truelayer's access token
+ *
+ * @see http://docs.truelayer.com/#exchange-code-with-access_token
+ */
 const getTruelayerAuthToken = async (req, res) => {
 
     var dataToLog = {
@@ -126,6 +135,11 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
     });
 };
 
+/**
+ * This method is used to get the authenticated user information from Truelayer
+ *
+ * @see http://docs.truelayer.com/#retrieve-identity-information
+ */
 const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
     //
@@ -142,12 +156,16 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
         });
 
         return info;
+
     } catch (Error) {
 
         returnCallbackFailure(req, res, tracecodes.ERROR_FETCHING_CUSTOMER_INFO);
     }
 };
 
+/**
+ * Helper method used to failures in the callback route
+ */
 const returnCallbackFailure = (req, res, traceCode) => {
 
     var dataToLog = {
@@ -160,10 +178,17 @@ const returnCallbackFailure = (req, res, traceCode) => {
 
     // If a response is already sent to the user, we don't resend the response
     if (res.headersSent === false) {
+
         res.sendStatus(401);
     }
 };
 
+/**
+ * A wrapper over Truelayer's validate token method.
+ * Access tokens expire every 1 hour, by default.
+ *
+ * @see http://docs.truelayer.com/#exchange-code-with-access_token
+ */
 const runTokenValidations = (req, res, tokens) => {
 
     if ((typeof tokens === 'undefined') ||

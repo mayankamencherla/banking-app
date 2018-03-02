@@ -31,10 +31,14 @@ module.exports.controller = (app) => {
             return;
         };
 
+        // We create a new authenticated user with the tokens
         service.createNewAuthenticatedUser(req, res, tokens);
 
+        // We get the authenticated user information
         const info = await service.getAuthenticatedUserInfo(req, res, tokens);
 
+        // If we are unable to fetch the data from Truelayer's servers,
+        // info will be undefined, and therefore, we must return early
         if (typeof info === 'undefined') {
 
             return;

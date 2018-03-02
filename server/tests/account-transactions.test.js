@@ -187,7 +187,7 @@ describe('Test account transactions', () => {
 
     });
 
-    it('should not save transactions without results as main key of response json', (done) => {
+    it('should not save transactions without results as main key of response json', async (done) => {
 
         req = {
             originalUrl: '/account/1/transactions',
@@ -201,7 +201,7 @@ describe('Test account transactions', () => {
 
         res = {
             statusCode: 200,
-            sendStatusCode: (statusCode) => {
+            sendStatus: (statusCode) => {
                 this.statusCode = statusCode;
             }
         };
