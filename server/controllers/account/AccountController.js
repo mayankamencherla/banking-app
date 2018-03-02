@@ -35,7 +35,7 @@ module.exports.controller = (app) => {
      * This route is used to pull out the transactions saved in the DB, and
      * return the min, max and average of amounts grouped by transaction categories.
      */
-    app.get('/account/:account_id/amounts', authenticate, async (req, res) => {
+    app.get('/account/:account_id/statistics', authenticate, async (req, res) => {
 
         logger.info({
             code: tracecodes.CUSTOMER_ACCOUNT_STATS_REQUEST,
