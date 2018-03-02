@@ -19,8 +19,8 @@ const users = [{
     tokens: [{
         access: 'auth',
         token: jwt.sign({_id: userTwoId, access: 'auth'}, process.env.JWT_SECRET).toString(),
-        access_token: 'random_truelayer_access_token',
-        refresh_token: 'random_truelayer_refresh_token'
+        access_token: process.env.ACCESS_TOKEN,
+        refresh_token: process.env.REFRESH_TOKEN
     }]
 }];
 

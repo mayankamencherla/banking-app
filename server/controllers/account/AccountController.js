@@ -23,6 +23,13 @@ module.exports.controller = (app) => {
 
         const transactions = await service.sendTransactionsResponse(req, res, token);
 
+        // If we weren't able to fetch transactions, we return early
+        // TODO: Send all responses here
+        if (typeof transactions === 'undefined') {
+
+            return;
+        }
+
         res.json({"Transactions": transactions});
     });
 

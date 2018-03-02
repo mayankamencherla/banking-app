@@ -81,32 +81,37 @@ const refreshTokenIfExpired = async (req, res, token) => {
 
 const sendTransactionsResponse = async (req, res, token) => {
 
-    // TODO: Check this once - do this via then, catch
-    const transactions = await DataAPIClient.getTransactions(token.access_token, req.params.account_id);
+    try {
 
+        const transactions = await DataAPIClient.getTransactions(token.access_token, req.params.account_id);
 
-    // TODO: Do a dirty check and update only if different
-    // TODO: Save this into the transactions DB
-    User.saveTransactions(transactions.results, req.user._id)
-        .then((results) => {
-            console.log('Saved user transactions in the DB');
-        })
-        .catch((e) => {
-            console.log('Error', e);
-            res.status(400).send('Unable to save transactions in User DB');
+        logger.info({
+            code: tracecodes.CUSTOMER_TRANSACTIONS_RESPONSE,
+            url: req.originalUrl,
+            transactions: transactions,
+            app_token: token.token,
+            account_id: req.params.account_id,
         });
 
-    logger.info({
-        code: tracecodes.CUSTOMER_TRANSACTIONS_RESPONSE,
-        url: req.originalUrl,
-        transactions: transactions,
-        app_token: token.token,
-        account_id: req.params.account_id,
-    });
+        // TODO: Do a dirty check and update only if different
+        // TODO: Save this into the transactions DB
+        User.saveTransactions(transactions.results, req.user._id)
+            .then((results) => {
+                console.log('Saved user transactions in the DB');
+            })
+            .catch((e) => {
+                console.log('Error', e);
 
-    res.setHeader('x-auth', token.token);
+                res.status(400).send('Unable to save transactions in User DB');
+            });
 
-    return transactions;
+        res.setHeader('x-auth', token.token);
+
+        return transactions;
+    } catch (Error) {
+
+        returnApiFailure(req, res, Error);
+    }
 };
 
 const handleTransactionsEmpty = (req, res, transactions) => {
@@ -173,6 +178,24 @@ const getTxnCategoryStats = (req, transactions) => {
     });
 
     return responseObj;
+};
+
+const returnApiFailure = (req, res, error) => {
+
+    var dataToLog = {
+        code: tracecodes.CUSTOMER_ACCOUNT_API_CALL_ERROR,
+        url: req.originalUrl,
+        params: req.params,
+        error: error.message
+    };
+
+    logger.info(dataToLog);
+
+    // If a response is already sent to the user, we don't resend the response
+    if (res.headersSent === false) {
+
+        res.sendStatus(400);
+    }
 };
 
 module.exports = {

@@ -72,9 +72,7 @@ describe('Authentication + Authorization via Truelayer', () => {
             // mock the get info API call to Truelayer
             nock('https://api.truelayer.com')
                 .get('/data/v1/info')
-                .reply(
-                    200, response
-                );
+                .reply(200, response);
 
             request(app)
                 .get('/callback?code=2')

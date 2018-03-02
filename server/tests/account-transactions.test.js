@@ -26,7 +26,39 @@ describe('Fetching account transactions', () => {
             .end(done);
     });
 
-    // it('should pass authentication and fetch user transactions', (done) => {
+    it('should pass authentication and fetch transactions', (done) => {
+
+        // We want to run this test case only with a valid token in the env
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            const response = require(__dirname + '/json/transactions.json');
+
+            nock('https://api.truelayer.com')
+                .get('/data/v1/accounts/1/transactions')
+                .reply(200, response)
+
+            request(app)
+                .get('/account/1/transactions')
+                .set('x-auth', users[1].tokens[0].token)
+                .expect(200)
+                .end((err, res) => {
+
+                    const results = res.body.Transactions;
+
+                    expect(results).toEqual(response);
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(true);
+
+                    done();
+                });
+        } else {
+            done();
+        }
+    });
+
+    // it('should fail token validation and create new token and fetch transactions', (done) => {
 
     // });
 });
