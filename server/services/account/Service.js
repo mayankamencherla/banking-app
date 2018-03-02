@@ -55,6 +55,8 @@ const refreshTokenIfExpired = async (req, res, token) => {
                         })
                         .then( async (token) => {
 
+                            // TODO: This flow is completely broken
+
                             logger.info({
                                 code: tracecodes.APP_AUTH_TOKEN_GENERATED,
                                 app_token: token,
@@ -93,17 +95,7 @@ const sendTransactionsResponse = async (req, res, token) => {
             account_id: req.params.account_id,
         });
 
-        // TODO: Do a dirty check and update only if different
-        // TODO: Save this into the transactions DB
-        User.saveTransactions(transactions.results, req.user._id)
-            .then((results) => {
-                console.log('Saved user transactions in the DB');
-            })
-            .catch((e) => {
-                console.log('Error', e);
-
-                res.status(400).send('Unable to save transactions in User DB');
-            });
+        saveAccountTransactionsToUser(req, transactions, token);
 
         res.setHeader('x-auth', token.token);
 
@@ -112,6 +104,35 @@ const sendTransactionsResponse = async (req, res, token) => {
 
         returnApiFailure(req, res, Error);
     }
+};
+
+const saveAccountTransactionsToUser = (req, transactions, token) => {
+
+    // TODO: Do a dirty check and update only if different
+    // TODO: Save this into the transactions DB
+    User.saveTransactions(transactions.results, req.user._id)
+        .then((results) => {
+
+            logger.info({
+                code: tracecodes.CUSTOMER_TRANSACTIONS_SAVED,
+                url: req.originalUrl,
+                transactions: results,
+                app_token: token.token,
+                account_id: req.params.account_id,
+            });
+        })
+        .catch((e) => {
+
+            logger.info({
+                code: tracecodes.CUSTOMER_TRANSACTIONS_NOT_SAVED,
+                url: req.originalUrl,
+                error: e.message,
+                app_token: token.token,
+                account_id: req.params.account_id,
+            });
+
+            res.sendStatus(400);
+        });
 };
 
 const handleTransactionsEmpty = (req, res, transactions) => {
