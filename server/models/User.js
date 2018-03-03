@@ -108,13 +108,18 @@ UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_to
     const encrypted_refresh = encrypt(refresh_token);
 
     // We encrypt the truelayer tokens before saving
-    const tokens = [{access, token, encrypted_access, encrypted_refresh}];
+    const newToken = [{
+        access: access,
+        token: token,
+        access_token: encrypted_access,
+        refresh_token: encrypted_refresh
+    }];
 
     return await User.update({
                     _id: id
                 }, {
                     $set: {
-                        tokens: tokens
+                        tokens: newToken
                     }
                 }).then(() => {
 

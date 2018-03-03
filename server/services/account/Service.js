@@ -106,11 +106,16 @@ const sendTransactionsResponse = async (req, res, token) => {
 
         // We save the transactions to the DB
         // TODO: Optimize this and save only if not already saved
-        await saveAccountTransactionsToUser(req, transactions, token);
+        await saveAccountTransactionsToUser(req, res, transactions, token);
 
-        res.setHeader('x-auth', token.token);
+        // If no errors occurred in the flow above, we can return
+        // token as a header as the transactions were saved in the DB
+        if (res.headersSent === false) {
 
-        return transactions;
+            res.setHeader('x-auth', token.token);
+
+            return transactions;
+        }
     } catch (Error) {
 
         returnApiFailure(req, res, Error);
@@ -120,7 +125,7 @@ const sendTransactionsResponse = async (req, res, token) => {
 /**
  * We must save the fetched transactions to the DB
  */
-const saveAccountTransactionsToUser = async (req, transactions, token) => {
+const saveAccountTransactionsToUser = async (req, res, transactions, token) => {
 
     // TODO: Do a dirty check and update only if different
     // TODO: Save this into the transactions DB
@@ -167,6 +172,9 @@ const handleTransactionsEmpty = (req, res) => {
 
 /**
  * Computes the {min, max, ave} values for each transaction category
+ * The code is built to suit the API spec of Truelayer's transactions.
+ *
+ * @see http://docs.truelayer.com/#retrieve-account-transactions
  */
 const getTxnCategoryStats = (req, transactions) => {
 
