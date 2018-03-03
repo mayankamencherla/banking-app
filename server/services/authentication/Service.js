@@ -142,6 +142,11 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
  */
 const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
+    // If the user creation flow broke at an earlier point, we want to return early
+    if (res.headersSent === true) {
+        return;
+    }
+
     //
     // Hit the info endpoint and get indentity of the customer once authentication is complete
     // and the user has authorized the app to use his banking data on the app

@@ -1,6 +1,7 @@
-const {User}         = require('@models/User');
-const {logger}       = require('@log/logger');
-const {tracecodes}   = require('@tracecodes');
+const {User}        = require('@models/User');
+const {logger}      = require('@log/logger');
+const {tracecodes}  = require('@tracecodes');
+const {decrypt}     = require('@utils/crypto');
 
 
 // This method redirects to the truelayer authentication url
@@ -38,13 +39,22 @@ const authenticate = (req, res, next) => {
             return Promise.reject();
         }
 
-        // we attach the user object to the request
-        req.user = user;
-
         logger.info({
             code: tracecodes.AUTHENTICATED_USER_FOUND,
             app_token: token,
         });
+
+        // We must decrypt the access and refresh tokens
+        const userTokens = user.tokens[0];
+
+        user.tokens[0] = {
+            token: userTokens.token,
+            access_token: decrypt(userTokens.access_token),
+            refresh_token: decrypt(userTokens.refresh_token)
+        };
+
+        // we attach the user object to the request
+        req.user = user;
 
         next();
     }).catch((e) => {

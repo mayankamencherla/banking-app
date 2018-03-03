@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "crypto": "^1.0.1",
     "dotenv": "^5.0.1",
     "envalid": "^3.1.1",
     "express": "^4.16.2",
@@ -38,6 +39,7 @@
     "@log": "server/log",
     "@tracecodes": "server/tracecodes/tracecodes",
     "@services": "server/services",
-    "@seed": "server/tests/seed"
+    "@seed": "server/tests/seed",
+    "@utils": "server/utils"
   }
 }

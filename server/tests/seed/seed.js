@@ -2,13 +2,21 @@ require('dotenv').config();
 
 const {ObjectID}                     = require('mongodb');
 const {User}                         = require('@models/User');
+const {encrypt}                      = require('@utils/crypto');
 
 const jwt                            = require('jsonwebtoken');
+const envalid                        = require('envalid');
 
 // Generate object ID's for the 3 user objects to be seeded into the DB
 const userOneId   = new ObjectID();
 const userTwoId   = new ObjectID();
 const userThreeId = new ObjectID();
+
+// Ensuring that access token and refresh token is set in the env file
+const env = envalid.cleanEnv(process.env, {
+    ACCESS_TOKEN : envalid.str(),
+    REFRESH_TOKEN: envalid.str()
+});
 
 const transactions = require('./../json/transactions.json');
 
@@ -22,8 +30,8 @@ const users = [{
     tokens: [{
         access: 'auth',
         token: jwt.sign({_id: userTwoId, access: 'auth'}, process.env.JWT_SECRET).toString(),
-        access_token: process.env.ACCESS_TOKEN,
-        refresh_token: process.env.REFRESH_TOKEN
+        access_token: encrypt(process.env.ACCESS_TOKEN),
+        refresh_token: encrypt(process.env.REFRESH_TOKEN)
     }],
     transactions: transactions.results,
 }, {
@@ -32,8 +40,8 @@ const users = [{
     tokens: [{
         access: 'auth',
         token: jwt.sign({_id: userThreeId, access: 'auth'}, process.env.JWT_SECRET).toString(),
-        access_token: "random_access_token_that_will_fail_renewal",
-        refresh_token: "random_refresh_token_that_will_fail_renewal"
+        access_token: encrypt("random_access_token_that_will_fail_renewal"),
+        refresh_token: encrypt("random_refresh_token_that_will_fail_renewal")
     }],
     transactions: [],
 }];

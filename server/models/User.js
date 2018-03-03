@@ -1,5 +1,6 @@
 const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
+const {encrypt}                      = require('@utils/crypto');
 
 const mongoose                       = require('mongoose');
 const jwt                            = require('jsonwebtoken');
@@ -54,8 +55,16 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
         app_token: token,
     });
 
-    // Reset the tokens array each time
-    const newToken = {access, token, access_token, refresh_token};
+    const encrypted_access = encrypt(access_token);
+    const encrypted_refresh = encrypt(refresh_token);
+
+    // We encrypt the truelayer tokens before saving
+    const newToken = {
+        access: access,
+        token: token,
+        access_token: encrypted_access,
+        refresh_token: encrypted_refresh
+    };
 
     user.tokens = [newToken];
 
@@ -66,10 +75,18 @@ UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
             app_token: token,
         });
 
-        return newToken;
+        return {
+            access,
+            token,
+            access_token,
+            refresh_token
+        };
     });
 };
 
+/**
+ * TODO: Refactor? Most of this code is re-usable
+ */
 UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_token) {
 
     var User = this;
@@ -86,7 +103,12 @@ UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_to
         app_token: token,
     });
 
-    const tokens = [{access, token, access_token, refresh_token}];
+    // We encrypt the truelayer tokens before saving
+    const encrypted_access = encrypt(access_token);
+    const encrypted_refresh = encrypt(refresh_token);
+
+    // We encrypt the truelayer tokens before saving
+    const tokens = [{access, token, encrypted_access, encrypted_refresh}];
 
     return await User.update({
                     _id: id
@@ -101,7 +123,11 @@ UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_to
                         app_token: token,
                     });
 
-                    return tokens[0];
+                    // Send token and decrypted version of access_token back
+                    return {
+                        token,
+                        access_token
+                    };
                 });
 }
 

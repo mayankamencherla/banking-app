@@ -1,12 +1,18 @@
-const winston = require('winston');
-const fs      = require('fs');
+const winston  = require('winston');
+const fs       = require('fs');
 
 // We store logs in the storage directory
 try {
-    fs.mkdirSync(__dirname + '/../storage');
-    fs.mkdirSync(__dirname + '/../storage/logs');
+
+    if (fs.existsSync(__dirname + '/../storage') === false) {
+
+        fs.mkdirSync(__dirname + '/../storage');
+        fs.mkdirSync(__dirname + '/../storage/logs');
+    }
 } catch (e) {
+
     if (e.code !== 'EEXIST') {
+
         throw e;
     }
 }
