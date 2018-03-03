@@ -60,6 +60,14 @@ Some key environment variables are listed and explained below:
 
 4. *JWT_SECRET* is the secret used to generate the app's json web token
 
-5. *AES_KEY* is the key used to encrypt and decrypt Truelayer's access and refresh token before storing in the DB / after retreiving from the DB. Since we are using AES-256-ECB, a key can be generated **[here](http://www.digitalsanctuary.com/aes-key-generator.php)**
+5. *AES_KEY* is the key used to encrypt and decrypt Truelayer's access and refresh token before storing in the DB / after retreiving from the DB.
 
 <br>
+
+## Securely storing Truelayer tokens
+> Truelayer's access and refresh tokens are stored in the DB, which means they can be compromised if not stored securely. The points below outline the steps taken by the application to store the OAuth2.0 tokens securely in the DB.
+
+1. Truelayer's access / refresh tokens are encrypted using the **[AES-256-CTR](http://web.cs.ucdavis.edu/~rogaway/papers/modes.pdf)** algorithm before storing in the DB. This step requires that the unique key  must be updated in the AES_KEY environment variable in the .env file
+
+2. When the app token is sent across to the API's, during the authentication step, we decrypt the encrypted Truelayer tokens using the AES-256-CTR algorithm again before sending it to Truelayer for further processing
+
