@@ -5,3 +5,4 @@ package-lock.json
 debug.log
 .nyc_output
 coverage/
+storage/
