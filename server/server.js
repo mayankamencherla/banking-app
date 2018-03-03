@@ -20,6 +20,14 @@ const server         = http.createServer(app);
 // We ensure that every request is a json, as this is a JSON API
 app.use(bodyParser.json());
 
+app.use((req, res, next) => {
+
+    // We want to prevent browser from caching API responses
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+
+    next();
+});
+
 // We go over all the directories in the controllers directory and file controller files
 fs.readdirSync(path.join(__dirname, 'controllers')).forEach((directory) => {
     fs.readdirSync(path.join(__dirname, 'controllers', directory)).forEach((file) => {
