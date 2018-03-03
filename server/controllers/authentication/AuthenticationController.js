@@ -32,7 +32,7 @@ module.exports.controller = (app) => {
         };
 
         // We create a new authenticated user with the tokens
-        service.createNewAuthenticatedUser(req, res, tokens);
+        await service.createNewAuthenticatedUser(req, res, tokens);
 
         // We get the authenticated user information
         const info = await service.getAuthenticatedUserInfo(req, res, tokens);

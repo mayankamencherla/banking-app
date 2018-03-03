@@ -69,7 +69,8 @@ const getTruelayerAuthToken = async (req, res) => {
     if ((req.query.hasOwnProperty('error') === true) ||
         (validator.isAlphanumeric(req.query.code) === false)) {
 
-        returnCallbackFailure(req, res, tracecodes.AUTH_CALLBACK_ERROR);
+        // This happens when the user doesn't accept authorization
+        returnCallbackFailure(req, res, tracecodes.AUTH_CALLBACK_ERROR, 401);
 
         return;
     }
@@ -86,7 +87,8 @@ const getTruelayerAuthToken = async (req, res) => {
         return tokens;
     } catch (Error) {
 
-        returnCallbackFailure(req, res, tracecodes.ERROR_EXCHANGING_CODE_FOR_TOKEN);
+        // The code parameter wasn't correct, or the token exchange didn't go through
+        returnCallbackFailure(req, res, tracecodes.ERROR_EXCHANGING_CODE_FOR_TOKEN, 502);
 
         return;
     }
@@ -96,12 +98,12 @@ const getTruelayerAuthToken = async (req, res) => {
  * We create a new authenticated user in our app
  * only after token validations have passed before this step
  */
-const createNewAuthenticatedUser = (req, res, tokens) => {
+const createNewAuthenticatedUser = async (req, res, tokens) => {
 
     // We create the user and add it into the DB
     const user = new User();
 
-    user.save().then(() => {
+    await user.save().then(() => {
 
         return user.generateAuthToken(tokens.access_token, tokens.refresh_token);
     }).then((token) => {
@@ -115,9 +117,9 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
         // We add a sanity check here to ensure that if this callback
         // is processed after a response is already sent, we should
         // not re-set headers, as this would lead to an error
-        // TODO: This is not the right way to handle things -> better to return in one place
         //
         if (res.headersSent === false) {
+
             res.setHeader('x-auth', token.token);
         }
 
@@ -128,9 +130,10 @@ const createNewAuthenticatedUser = (req, res, tokens) => {
             error: e
         });
 
-        // If a response is already sent to the user, we don't resend the response
+        //
         if (res.headersSent === false) {
-            res.sendStatus(400);
+
+            res.sendStatus(500);
         }
     });
 };
@@ -144,14 +147,22 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
     // If the user creation flow broke at an earlier point, we want to return early
     if (res.headersSent === true) {
+
         return;
     }
+
 
     //
     // Hit the info endpoint and get indentity of the customer once authentication is complete
     // and the user has authorized the app to use his banking data on the app
     //
     try {
+
+        logger.info({
+            code: tracecodes.FETCHING_CUSTOMER_INFO,
+            app_token: tokens.token,
+            url: req.originalUrl
+        });
 
         const info = await DataAPIClient.getInfo(tokens.access_token);
 
@@ -164,14 +175,18 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
     } catch (Error) {
 
-        returnCallbackFailure(req, res, tracecodes.ERROR_FETCHING_CUSTOMER_INFO);
+        //
+        // Likely error is invalid token, as we expect that
+        // the Truelayer service is up and running
+        //
+        returnCallbackFailure(req, res, tracecodes.ERROR_FETCHING_CUSTOMER_INFO, 401);
     }
 };
 
 /**
  * Helper method used to failures in the callback route
  */
-const returnCallbackFailure = (req, res, traceCode) => {
+const returnCallbackFailure = (req, res, traceCode, httpCode) => {
 
     var dataToLog = {
         code: traceCode,
@@ -184,7 +199,7 @@ const returnCallbackFailure = (req, res, traceCode) => {
     // If a response is already sent to the user, we don't resend the response
     if (res.headersSent === false) {
 
-        res.sendStatus(401);
+        res.sendStatus(httpCode);
     }
 };
 
@@ -199,7 +214,8 @@ const runTokenValidations = (req, res, tokens) => {
     if ((typeof tokens === 'undefined') ||
         (DataAPIClient.validateToken(tokens.access_token) === false)) {
 
-        returnCallbackFailure(req, res, tracecodes.TOKEN_VALIDATION_FAILURE);
+        // Bad Gateway, as we get the tokens from Truelayer
+        returnCallbackFailure(req, res, tracecodes.TOKEN_VALIDATION_FAILURE, 502);
 
         return false;
     }

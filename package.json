@@ -4,7 +4,7 @@
   "description": "Truelayer Interview application",
   "main": "index.js",
   "scripts": {
-    "start": "nodejs server/server.js",
+    "start": "node server/server.js",
     "test": "nyc --reporter=html --reporter=text --cache mocha server/**/*.test.js --exit"
   },
   "author": "mayankamencherla",
