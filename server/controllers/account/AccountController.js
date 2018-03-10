@@ -15,11 +15,17 @@ module.exports.controller = (app) => {
         // This is an async call, as we make an async API call,
         // we also make an async update call to the DB, if needed.
         //
-        await service.refreshTokenIfExpired(req, res, req.user.tokens[0]);
+        await service.refreshTokenIfExpired(req, res, req.token);
 
-        const token = req.user.tokens[0];
+        // Fetch all accounts for the user
+        req.accounts = await service.fetchAllUserAccounts(req, res);
 
-        const transactions = await service.sendTransactionsResponse(req, res, token);
+        if (typeof req.accounts === 'undefined') {
+
+            return;
+        }
+
+        const transactions = await service.getTransactionsResponse(req, res);
 
         // If we weren't able to fetch transactions, we return early
         // TODO: Send all responses here

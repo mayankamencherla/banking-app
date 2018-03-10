@@ -11,7 +11,7 @@ const authenticate = (req, res, next) => {
     // If token is not set in the header, it will be undefined,
     // In this case, it won't be logged below and an exception will raised later
     //
-    const token = req.header('x-auth');
+    var token = req.header('x-auth');
 
     if (typeof token === 'undefined') {
 
@@ -45,16 +45,17 @@ const authenticate = (req, res, next) => {
         });
 
         // We must decrypt the access and refresh tokens
-        const userTokens = user.tokens[0];
 
-        user.tokens[0] = {
-            token: userTokens.token,
-            access_token: decrypt(userTokens.access_token),
-            refresh_token: decrypt(userTokens.refresh_token)
+        token = {
+            app_token: user.app_token,
+            access_token: decrypt(user.truelayer_access_token),
+            refresh_token: decrypt(user.truelayer_refresh_token),
         };
 
         // we attach the user object to the request
-        req.user = user;
+        req.token = token;
+
+        req.user_id = user.id;
 
         next();
     }).catch((e) => {

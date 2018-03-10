@@ -1,101 +1,48 @@
+const knex                           = require('knex')(require('./../knexfile'));
 const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
 const {encrypt}                      = require('@utils/crypto');
-
-const mongoose                       = require('mongoose');
 const jwt                            = require('jsonwebtoken');
-const {DataAPIClient}                = require('truelayer-client');
+const uuidv1                         = require('uuid/v1');
 
-/*----------------------------------------------------------------*/
-
-const UserSchema = new mongoose.Schema({
-    // email: {
-    //     type: String,
-    //     required: true
-    //     // validate the email
-    // },
-    tokens: [{
-        access: {
-            type: String,
-            required: true,
-        },
-        token: {
-            type: String,
-            required: true,
-        },
-        // truelayer tokens
-        access_token: {
-            type: String,
-            required: true,
-        },
-        refresh_token: {
-            type: String,
-            required: true, // required because we use offline_access scope
-        }
-    }],
-    // We will dump the transactions into the UserSchema
-    transactions: [],
-});
-
-// This method is used to push the truelayer access token into the DB
-// We return the custom token to the user for re-use.
-UserSchema.methods.generateAuthToken = function(access_token, refresh_token) {
-
-    var user = this;
+const createUser  = (access_token, refresh_token) => {
 
     var access = 'auth'; // we are generating an auth token
 
-    // we get the web token based on the user._id attribute
-    var objectToTokenify = {_id: user._id.toHexString(), access};
+    const id = uuidv1();
+
+    // we get the web token based on the id attribute
+    var objectToTokenify = {id, access};
 
     var token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
 
     logger.info({
-        code: tracecodes.AUTH_TOKEN_GENERATION_REQUEST,
+        code: tracecodes.USER_CREATE_REQUEST,
         app_token: token,
     });
 
-    const encrypted_access = encrypt(access_token);
-    const encrypted_refresh = encrypt(refresh_token);
+    // TODO: Store access token in the redis caching layer
+    return knex('user')
+            .insert({
+                id: id,
+                app_token: token,
+                truelayer_access_token: encrypt(access_token),
+                truelayer_refresh_token: encrypt(refresh_token),
+            })
+            .then(() => {
 
-    // We encrypt the truelayer tokens before saving
-    const newToken = {
-        access: access,
-        token: token,
-        access_token: encrypted_access,
-        refresh_token: encrypted_refresh
-    };
-
-    user.tokens = [newToken];
-
-    return user.save().then(() => {
-
-        logger.info({
-            code: tracecodes.AUTH_TOKEN_GENERATION_SUCCESS,
-            app_token: token,
-        });
-
-        return {
-            access,
-            token,
-            access_token,
-            refresh_token
-        };
-    });
+                return Promise.resolve({app_token: token});
+            });
 };
 
-/**
- * TODO: Refactor? Most of this code is re-usable
- */
-UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_token) {
-
-    var User = this;
+const updateAuthToken = (id, access_token, refresh_token) => {
 
     var access = 'auth'; // we are generating an auth token
 
-    // we get the web token based on the user._id attribute
-    var objectToTokenify = {_id: id.toHexString(), access};
+    // we get the web token based on the id attribute
+    var objectToTokenify = {id: id.toHexString(), access};
 
+    // TODO: Will this change each time??
     var token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
 
     logger.info({
@@ -103,71 +50,25 @@ UserSchema.statics.updateAuthToken = async function(id, access_token, refresh_to
         app_token: token,
     });
 
-    // We encrypt the truelayer tokens before saving
-    const encrypted_access = encrypt(access_token);
-    const encrypted_refresh = encrypt(refresh_token);
+    var dataToUpdate = {
+        app_token: token,
+        truelayer_access_token: encrypt(access_token),
+        truelayer_refresh_token: encrypt(refresh_token),
+    };
 
-    // We encrypt the truelayer tokens before saving
-    const newToken = [{
-        access: access,
-        token: token,
-        access_token: encrypted_access,
-        refresh_token: encrypted_refresh
-    }];
+    // Update the row corresponding to the ID
+    return knex('user').where('id', id)
+                       .update(dataToUpdate)
+                       .then(() => {
 
-    return await User.update({
-                    _id: id
-                }, {
-                    $set: {
-                        tokens: newToken
-                    }
-                }).then(() => {
-
-                    logger.info({
-                        code: tracecodes.AUTH_TOKEN_UPDATE_SUCCESS,
-                        app_token: token,
-                    });
-
-                    // Send token and decrypted version of access_token back
-                    return {
-                        token,
-                        access_token
-                    };
-                });
-}
-
-// This method is used to save the transactions into the DB
-UserSchema.statics.saveTransactions = async function(results, id) {
-
-    var User = this;
-
-    if (typeof results === 'undefined') {
-
-        return Promise.reject();
-    }
-
-    logger.info({
-        code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
-        transactions: results,
-        user_id: id
-    });
-
-    // We update the transactions into the user's row in the DB in async fashion
-    return await User.update({
-                    _id: id
-                }, {
-                    $set: {
-                        transactions: results
-                    }
-                }).then(() => {
-
-                    return results;
-                });
+                            return Promise.resolve({
+                                app_token: token,
+                                access_token: dataToUpdate.truelayer_refresh_token,
+                            });
+                       });
 };
 
-// We want to find the user by the custom token
-UserSchema.statics.findByToken = function(token) {
-    var User = this; // Model method, so this = User model
+const findByToken = (token) => {
 
     logger.info({
         code: tracecodes.FIND_USER_BY_TOKEN_REQUEST,
@@ -181,13 +82,16 @@ UserSchema.statics.findByToken = function(token) {
         return Promise.reject();
     }
 
-    return User.findOne({
-        "_id": decoded._id,
-        'tokens.token': token,
-        'tokens.access': 'auth'
-    });
+    // Select based on the token and the decoded id
+    return knex('user').where({
+                            id: decoded.id,
+                            app_token: token
+                        })
+                        .first();
 };
 
-const User = mongoose.model('User', UserSchema);
-
-module.exports = {User};
+module.exports.User = {
+    createUser,
+    updateAuthToken,
+    findByToken
+};

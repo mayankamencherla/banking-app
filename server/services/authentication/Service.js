@@ -101,16 +101,13 @@ const getTruelayerAuthToken = async (req, res) => {
 const createNewAuthenticatedUser = async (req, res, tokens) => {
 
     // We create the user and add it into the DB
-    const user = new User();
-
-    await user.save().then(() => {
-
-        return user.generateAuthToken(tokens.access_token, tokens.refresh_token);
-    }).then((token) => {
+    // TODO: No callback here, we must use this differently
+    return User.createUser(tokens.access_token, tokens.refresh_token)
+        .then((token) => {
 
         logger.info({
             code: tracecodes.APP_AUTH_TOKEN_GENERATED,
-            app_token: token.token,
+            app_token: token,
         });
 
         //
@@ -120,7 +117,7 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
         //
         if (res.headersSent === false) {
 
-            res.setHeader('x-auth', token.token);
+            res.setHeader('x-auth', token.app_token);
         }
 
     }).catch((e) => {

@@ -6,3 +6,5 @@ debug.log
 .nyc_output
 coverage/
 storage/
+.DS_Store
+knexfile.js

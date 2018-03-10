@@ -13,16 +13,19 @@ exports.up = function(knex, Promise) {
 
         t.increments('id').primary();
 
+        // To pull out transactions by user id
+        t.string('user_id').notNullable();
+
         // Each transaction has to belong to an account_id
         t.string('account_id').notNullable();
 
         // Unique ID of the transaction
-        t.string('transaction_id').notNullable();
+        t.string('transaction_id').notNullable().unique();
 
         // Timestamp of when the transaction was authorized
         t.string('timestamp').notNullable();
 
-        t.string('description').notNullable();
+        t.string('description').nullable();
 
         t.string('transaction_type').notNullable();
 
@@ -33,7 +36,7 @@ exports.up = function(knex, Promise) {
         t.string('currency').notNullable();
 
         // Automatically add an updated_at and created_at field
-        t.timestamps(false, true)
+        t.timestamps(false, true);
     });
 };
 

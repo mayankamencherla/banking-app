@@ -22,6 +22,9 @@ $ npm install
 ```
 
 3. Copy over .env.sample to .env in the root of the project
+```bash
+$ cp .env.sample .env
+```
 
 4. Change the values of the environment variables in .env file based on requirement
 

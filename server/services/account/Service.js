@@ -4,6 +4,7 @@
 
  // In-house files
 const {User}                         = require('@models/User');
+const {Transactions}                 = require('@models/Transactions');
 const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
 
@@ -36,7 +37,7 @@ const refreshTokenIfExpired = async (req, res, token) => {
         logger.error({
             code: tracecodes.EXPIRED_ACCESS_TOKEN,
             url: req.originalUrl,
-            app_token: token.token,
+            app_token: token.app_token,
         });
 
         // get new access token and replace the existing token
@@ -50,17 +51,17 @@ const refreshTokenIfExpired = async (req, res, token) => {
                             });
 
                             // we replace the old token with the new token
-                            await User.updateAuthToken(req.user._id, token.access_token, token.refresh_token)
+                            await User.updateAuthToken(req.user_id, token.access_token, token.refresh_token)
                                     .then((token) => {
 
                                         logger.info({
                                             code: tracecodes.APP_AUTH_TOKEN_GENERATED,
-                                            app_token: token.token,
+                                            app_token: token.app_token,
                                         });
 
                                         // The new token is set in the request for
                                         // later usage in the transaction fetch flow
-                                        req.user.tokens[0] = token;
+                                        req.token = token;
 
                                         return;
                                     });
@@ -80,11 +81,48 @@ const refreshTokenIfExpired = async (req, res, token) => {
 };
 
 /**
+ *
+ */
+const fetchAllUserAccounts = async (req, res) => {
+
+    if (DataAPIClient.validateToken(req.token.access_token) === false) {
+
+        // We were not able to successfully renew the token
+        return;
+    }
+
+    try {
+
+        logger.info({
+            code: tracecodes.CUSTOMER_ACCOUNTS_REQUEST,
+            url: req.originalUrl,
+            app_token: req.token.app_token,
+        });
+
+        const accounts = await DataAPIClient.getAccounts(req.token.access_token);
+
+        logger.info({
+            code: tracecodes.CUSTOMER_ACCOUNTS_RESPONSE,
+            url: req.originalUrl,
+            accounts: accounts,
+            app_token: req.token.app_token,
+        });
+
+        // We pick out the account ids that are needed for later usage
+        return _.map(accounts.results, _.partialRight(_.pick, 'account_id'));
+
+    } catch (Error) {
+
+        returnApiFailure(req, res, Error);
+    }
+};
+
+/**
  * An async wrapper over Truelayer's getTransactions SDK method
  *
  * @see http://docs.truelayer.com/#retrieve-account-transactions
  */
-const sendTransactionsResponse = async (req, res, token) => {
+const getTransactionsResponse = async (req, res) => {
 
     // Return early if a token validation failure happened earlier in the flow
     if (res.headersSent !== false) {
@@ -92,27 +130,46 @@ const sendTransactionsResponse = async (req, res, token) => {
         return;
     }
 
+    var token = req.token;
+
+    // TODO: Group by req.accounts - map them to transactions
+
     try {
 
-        const transactions = await DataAPIClient.getTransactions(token.access_token, req.params.account_id);
+        for (let i=0; i<req.accounts.length; i++) {
+
+            var accountId = req.accounts[i].account_id;
+
+            var accountTransactions = (await DataAPIClient.getTransactions(token.access_token, accountId)).results;
+
+            logger.info({
+                code: tracecodes.ACCOUNT_TRANSACTIONS_RESPONSE,
+                url: req.originalUrl,
+                transactions: accountTransactions,
+                app_token: token.app_token,
+                account_id: accountId,
+            });
+
+            req.accounts[i].transactions = accountTransactions;
+
+            // We save account transactions one account at a time
+            await saveAccountTransactions(req, res, accountTransactions, accountId);
+        }
+
+        transactions = req.accounts;
 
         logger.info({
             code: tracecodes.CUSTOMER_TRANSACTIONS_RESPONSE,
             url: req.originalUrl,
             transactions: transactions,
-            app_token: token.token,
-            account_id: req.params.account_id,
+            app_token: token.app_token,
         });
-
-        // We save the transactions to the DB
-        // TODO: Optimize this and save only if not already saved
-        await saveAccountTransactionsToUser(req, res, transactions, token);
 
         // If no errors occurred in the flow above, we can return
         // token as a header as the transactions were saved in the DB
         if (res.headersSent === false) {
 
-            res.setHeader('x-auth', token.token);
+            res.setHeader('x-auth', token.app_token);
 
             return transactions;
         }
@@ -125,19 +182,19 @@ const sendTransactionsResponse = async (req, res, token) => {
 /**
  * We must save the fetched transactions to the DB
  */
-const saveAccountTransactionsToUser = async (req, res, transactions, token) => {
+const saveAccountTransactions = async (req, res, transactions, accountId) => {
 
     // TODO: Do a dirty check and update only if different
     // TODO: Save this into the transactions DB
-    await User.saveTransactions(transactions.results, req.user._id)
+    await Transactions.saveTransactions(transactions, accountId, req.user_id)
         .then((results) => {
 
             logger.info({
                 code: tracecodes.CUSTOMER_TRANSACTIONS_SAVED,
                 url: req.originalUrl,
                 transactions: results,
-                app_token: token.token,
-                account_id: req.params.account_id,
+                app_token: req.token.app_token,
+                account_id: accountId
             });
         })
         .catch((e) => {
@@ -146,10 +203,11 @@ const saveAccountTransactionsToUser = async (req, res, transactions, token) => {
                 code: tracecodes.CUSTOMER_TRANSACTIONS_NOT_SAVED,
                 url: req.originalUrl,
                 error: e,
-                app_token: token.token,
-                account_id: req.params.account_id,
+                app_token: req.token.app_token,
+                account_id: accountId
             });
 
+            // TODO: Saving one account's txns shouldn't halt the API???
             res.sendStatus(400);
         });
 };
@@ -162,7 +220,7 @@ const saveAccountTransactionsToUser = async (req, res, transactions, token) => {
 const handleTransactionsEmpty = (req, res) => {
 
     logger.error({
-        code: tracecodes.CUSTOMER_TRANSCTIONS_NOT_SAVED,
+        code: tracecodes.CUSTOMER_TRANSACTIONS_NOT_SAVED,
         url: req.originalUrl,
         account_id: req.params.account_id,
     });
@@ -250,8 +308,9 @@ const returnApiFailure = (req, res, error) => {
 
 module.exports = {
     refreshTokenIfExpired,
-    sendTransactionsResponse,
+    getTransactionsResponse,
     handleTransactionsEmpty,
     getTxnCategoryStats,
-    saveAccountTransactionsToUser
+    saveAccountTransactions,
+    fetchAllUserAccounts
 };
