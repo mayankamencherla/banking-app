@@ -17,7 +17,7 @@ exports.up = function(knex, Promise) {
         t.string('user_id').notNullable();
 
         // Each transaction has to belong to an account_id
-        t.string('account_id').notNullable();
+        t.string('account_id').notNullable().;
 
         // Unique ID of the transaction
         t.string('transaction_id').notNullable().unique();
@@ -37,6 +37,12 @@ exports.up = function(knex, Promise) {
 
         // Automatically add an updated_at and created_at field
         t.timestamps(false, true);
+
+        t.foreign('user_id').references('user_id').inTable('user');
+
+        t.index('account_id');
+
+        t.index('transaction_id');
     });
 };
 

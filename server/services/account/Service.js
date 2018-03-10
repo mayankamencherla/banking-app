@@ -208,7 +208,9 @@ const saveAccountTransactions = async (req, res, transactions, accountId) => {
             });
 
             // TODO: Saving one account's txns shouldn't halt the API???
-            res.sendStatus(400);
+            if (res.headersSent === false) {
+                res.sendStatus(400);
+            }
         });
 };
 

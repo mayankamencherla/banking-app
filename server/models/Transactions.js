@@ -26,28 +26,31 @@ const saveTransactions = (transactions, accountId, userId) => {
         user_id: userId
     });
 
-    const rows = getTransactionRowsToSaveToDb(transactions, accountId, userId);
+    // TODO: See if there's a better way to handle duplicates
+    return getTransactionRowsToSaveToDb(transactions, accountId, userId)
+            .then((rows) => {
 
-    // TODO: This seems pretty sub-optimal
-    // There must surely be a way to get txn if from the call above
-    const ids = _.map(rows, _.partialRight(_.pick, 'transaction_id'));
+                logger.info({
+                    code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
+                    rows: rows
+                });
 
-    return knex.batchInsert('transactions', rows, 10000)
-               .whereNotExists(() => {
-                    return this.select(Knex.raw(1))
-                               .from('transactions')
-                               // TODO: How on earth do I pick transactionIDs here??
-                               .whereIn('transaction_id', ids);
-               })
-               .then(() => {
+                return knex.batchInsert('transactions', rows, 10000)
+                           .then(() => {
 
-                   return Promise.resolve(rows);
-               });
+                               return Promise.resolve(rows);
+                           });
+            });
 };
 
+/**
+ * Runs through the entire transactions array, pulls out relevant
+ * information and then filters the transactions that have already
+ * been saved in the DB so that duplication is avoided.
+ */
 const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
 
-    return _.map(transactions, (transaction) => {
+    var rows = _.map(transactions, (transaction) => {
 
         var result = _.pick(transaction, [
                         'transaction_type',
@@ -65,6 +68,28 @@ const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
 
         return result;
     });
+
+    const transactionIds = _.map(rows, (transaction) => {
+
+                                var result = _.pick(transaction, 'transaction_id');
+
+                                return result.transaction_id;
+                           });
+
+    return knex('transactions')
+            .select('transaction_id')
+            .whereIn('transaction_id', transactionIds)
+            .then((savedTransactions) => {
+
+                savedTransactions = savedTransactions.map(transaction => transaction.transaction_id);
+
+                // We don't want to insert transaction_ids that
+                // are already inserted into the DB
+                return _.filter(rows, (item) => {
+
+                            return !savedTransactions.includes(item.transaction_id);
+                        });
+        });
 };
 
 module.exports.Transactions = {
