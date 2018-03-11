@@ -44,8 +44,6 @@ const authenticate = (req, res, next) => {
             app_token: token,
         });
 
-        // We must decrypt the access and refresh tokens
-
         token = {
             app_token: user.app_token,
             access_token: decrypt(user.truelayer_access_token),

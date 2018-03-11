@@ -82,6 +82,7 @@ const findByToken = (token) => {
     }
 
     // Select based on the token and the decoded id
+    // TODO: There's a bug here - the usage seems incorrect
     return knex('user')
         .where({
             id: decoded.id,

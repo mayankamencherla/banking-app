@@ -12,8 +12,8 @@ const uuidv1            = require('uuid/v1');
 const client = redis.createClient();
 
 // Generate object ID's for the 3 user objects to be seeded into the DB
-const userOneId   = 1111111111;
-const userTwoId   = uuidv1();
+const userOneId   = 2374673843;
+const userTwoId   = 1111111111;
 
 // Ensuring that access token and refresh token is set in the env file
 const env = envalid.cleanEnv(process.env, {
@@ -35,8 +35,6 @@ const users = [{
 
 const populateUsers = async (done) => {
     // Remove all user seed and insert new
-
-    // Is this not removing all the entries
     await knex('user').del().then(async () => {
 
         await knex.batchInsert('user', users, 1000)

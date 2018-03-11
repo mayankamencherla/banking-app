@@ -10,7 +10,7 @@ const {User}                 = require('@models/User');
 
 const {users, populateUsers, populateTransactions} = require('@seed/seed');
 
-// run seed before each test case
+// Seed the DB
 before(() => {
   return new Promise((resolve) => {
       populateUsers();
