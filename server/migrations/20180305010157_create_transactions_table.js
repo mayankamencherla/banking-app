@@ -17,7 +17,7 @@ exports.up = function(knex, Promise) {
         t.string('user_id').notNullable();
 
         // Each transaction has to belong to an account_id
-        t.string('account_id').notNullable().;
+        t.string('account_id').notNullable();
 
         // Unique ID of the transaction
         t.string('transaction_id').notNullable().unique();

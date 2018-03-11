@@ -280,6 +280,7 @@ const handleTransactionsEmpty = (req, res) => {
  */
 const getTxnCategoryStats = (req, transactions) => {
 
+    // TODO: Why is this not working like it should??
     // All the amounts are in GBP
     const groupedTransactions = _.groupBy(transactions, tran => tran.transaction_category);
 

@@ -105,7 +105,7 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
 
         logger.info({
             code: tracecodes.APP_AUTH_TOKEN_GENERATED,
-            app_token: token,
+            app_token: token.app_token,
         });
 
         //

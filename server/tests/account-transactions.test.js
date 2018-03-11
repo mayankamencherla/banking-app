@@ -89,7 +89,7 @@ describe('Test account transactions', () => {
 
             request(app)
                 .get('/user/transactions')
-                .set('x-auth', users[1].app_token)
+                .set('x-auth', users[0].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(200);
@@ -131,7 +131,7 @@ describe('Test account transactions', () => {
 
             request(app)
                 .get('/user/transactions')
-                .set('x-auth', users[1].app_token)
+                .set('x-auth', users[0].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(400);
@@ -158,7 +158,7 @@ describe('Test account transactions', () => {
 
             request(app)
                 .get('/user/transactions')
-                .set('x-auth', users[2].app_token)
+                .set('x-auth', users[1].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(400);
@@ -204,7 +204,7 @@ describe('Test account transactions', () => {
 
             request(app)
                 .get('/user/transactions')
-                .set('x-auth', users[2].app_token)
+                .set('x-auth', users[1].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(200);

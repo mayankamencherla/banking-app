@@ -54,7 +54,8 @@ module.exports.controller = (app) => {
         const transactions = await service.getUserTransactions(req.user_id);
 
         // TODO: Await must be in a try catch block
-        if (typeof transactions === 'undefined') {
+        if (typeof transactions === 'undefined' ||
+            transactions.length === 0) {
 
             // Return early if transactions are not saved in the DB
             service.handleTransactionsEmpty(req, res);

@@ -7,12 +7,14 @@ const {DataAPIClient}        = require('truelayer-client');
 
 const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
-const {users, populateUsers} = require('@seed/seed');
+
+const {users, populateUsers, populateTransactions} = require('@seed/seed');
 
 // run seed before each test case
 before(() => {
   return new Promise((resolve) => {
       populateUsers();
+      populateTransactions();
       resolve();
   });
 });
@@ -32,15 +34,15 @@ describe('Test account transaction statistics route', () => {
             .end(done);
     });
 
+    // Causing a duplicated entry during authentication for some reason!!
+    // TODO: We must fix this as soon as possible
     it('should pass authentication and fetch account statistics', (done) => {
 
         const response = require(__dirname + '/json/statistics.json');
 
-        // Have to store this in redis
-
         request(app)
             .get('/user/statistics')
-            .set('x-auth', users[1].app_token)
+            .set('x-auth', users[0].app_token)
             .end((err, res) => {
 
                 expect(res.statusCode).toEqual(200);
@@ -54,7 +56,7 @@ describe('Test account transaction statistics route', () => {
                 expect(xAuthSet).toEqual(true);
 
                 // Authenticated token has not expired and will be sent back in the response
-                expect(res.header['x-auth']).toEqual(users[1].app_token);
+                expect(res.header['x-auth']).toEqual(users[0].app_token);
 
                 done();
             });
@@ -64,7 +66,7 @@ describe('Test account transaction statistics route', () => {
 
         request(app)
             .get('/user/statistics')
-            .set('x-auth', users[2].app_token)
+            .set('x-auth', users[1].app_token)
             .end((err, res) => {
 
                 expect(res.statusCode).toEqual(400);
