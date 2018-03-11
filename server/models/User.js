@@ -35,12 +35,10 @@ const createUser  = (access_token, refresh_token) => {
             });
 };
 
-const updateAuthToken = (id, access_token, refresh_token) => {
-
-    var access = 'auth'; // we are generating an auth token
+const updateAuthToken = async (id, access_token, refresh_token) => {
 
     // we get the web token based on the id attribute
-    var objectToTokenify = {id: id.toHexString(), access};
+    var objectToTokenify = {id: id, access: 'auth'};
 
     // TODO: Will this change each time??
     var token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
@@ -64,7 +62,7 @@ const updateAuthToken = (id, access_token, refresh_token) => {
 
             return Promise.resolve({
                 app_token: token,
-                access_token: dataToUpdate.truelayer_refresh_token,
+                access_token: access_token,
             });
         });
 };

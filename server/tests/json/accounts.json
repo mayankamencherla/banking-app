@@ -1,0 +1,22 @@
+{
+  "results": [
+    {
+      "update_timestamp": "2017-02-07T17:29:24.740802Z",
+      "account_id": "f1234560abf9f57287637624def390871",
+      "account_type": "TRANSACTION",
+      "display_name": "Club Lloyds",
+      "currency": "GBP",
+      "account_number": {
+        "iban": "GB35LOYD12345678901234",
+        "number": "12345678",
+        "sort_code": "12-34-56",
+        "swift_bic": "LOYDGB2L"
+      },
+      "provider": {
+        "display_name": "Lloyds Bank",
+        "logo_uri": "https://auth.truelayer.com/img/banks/banks-icons/lloyds-icon.svg",
+        "provider_id": "lloyds"
+      }
+    }
+  ]
+}

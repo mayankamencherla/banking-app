@@ -54,8 +54,7 @@ module.exports.controller = (app) => {
         const transactions = await service.getUserTransactions(req.user_id);
 
         // TODO: Await must be in a try catch block
-        if (typeof transactions === 'undefined' ||
-            transactions.length === 0) {
+        if (typeof transactions === 'undefined') {
 
             // Return early if transactions are not saved in the DB
             service.handleTransactionsEmpty(req, res);
@@ -63,11 +62,13 @@ module.exports.controller = (app) => {
             return;
         }
 
+        // If txn length = 0, then we return a different response
+
+        // Look into whether amounts are being tallied up correctly
         const responseObj = service.getTxnCategoryStats(req, transactions);
 
         // TODO: Don't cache the response in the browser, cache it in the app
         res.setHeader('x-auth', req.token.app_token);
         res.json({"Statistics": responseObj});
     });
-
 };

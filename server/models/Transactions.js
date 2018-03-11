@@ -3,7 +3,7 @@ const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
 
 const _                              = require('lodash');
-const redis                          = require("redis");
+const redis                          = require('redis');
 
 // Create a redis client
 const client = redis.createClient();

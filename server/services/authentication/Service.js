@@ -82,9 +82,7 @@ const getTruelayerAuthToken = async (req, res) => {
     try {
 
         // We get Truelayer's access token after authorization step via OAuth2.0
-        const tokens = await authClient.exchangeCodeForToken(env.REDIRECT_URI, code);
-
-        return tokens;
+        return await authClient.exchangeCodeForToken(env.REDIRECT_URI, code);
     } catch (Error) {
 
         // The code parameter wasn't correct, or the token exchange didn't go through

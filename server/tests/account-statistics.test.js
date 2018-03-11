@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const jwt                    = require('jsonwebtoken');
-const {ObjectID}             = require('mongodb');
 const expect                 = require('expect');
 const request                = require('supertest');
 const {DataAPIClient}        = require('truelayer-client');
@@ -11,7 +10,12 @@ const {User}                 = require('@models/User');
 const {users, populateUsers} = require('@seed/seed');
 
 // run seed before each test case
-beforeEach(populateUsers);
+before(() => {
+  return new Promise((resolve) => {
+      populateUsers();
+      resolve();
+  });
+});
 
 describe('Test account transaction statistics route', () => {
 
@@ -23,7 +27,7 @@ describe('Test account transaction statistics route', () => {
         // as an exception will be caught
         //
         request(app)
-            .get('/account/1/statistics')
+            .get('/user/statistics')
             .expect(401)
             .end(done);
     });
@@ -32,9 +36,11 @@ describe('Test account transaction statistics route', () => {
 
         const response = require(__dirname + '/json/statistics.json');
 
+        // Have to store this in redis
+
         request(app)
-            .get('/account/1/statistics')
-            .set('x-auth', users[1].tokens[0].token)
+            .get('/user/statistics')
+            .set('x-auth', users[1].app_token)
             .end((err, res) => {
 
                 expect(res.statusCode).toEqual(200);
@@ -48,7 +54,7 @@ describe('Test account transaction statistics route', () => {
                 expect(xAuthSet).toEqual(true);
 
                 // Authenticated token has not expired and will be sent back in the response
-                expect(res.header['x-auth']).toEqual(users[1].tokens[0].token);
+                expect(res.header['x-auth']).toEqual(users[1].app_token);
 
                 done();
             });
@@ -57,8 +63,8 @@ describe('Test account transaction statistics route', () => {
     it('should pass authentication and return 400 as user has no transactions', (done) => {
 
         request(app)
-            .get('/account/1/statistics')
-            .set('x-auth', users[2].tokens[0].token)
+            .get('/user/statistics')
+            .set('x-auth', users[2].app_token)
             .end((err, res) => {
 
                 expect(res.statusCode).toEqual(400);

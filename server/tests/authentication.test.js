@@ -30,8 +30,9 @@ describe('Authentication + Authorization via Truelayer', () => {
 
         request(app)
                 .get('/callback?error=access_denied')
-                .expect(401)
                 .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(401);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
@@ -41,33 +42,13 @@ describe('Authentication + Authorization via Truelayer', () => {
                 });
     });
 
-    it('should not create new authenticated user', (done) => {
-
-        var req = {};
-
-        var res = {
-            headersSent: false,
-            statusCode: 200,
-            sendStatus: (statusCode) => {
-                this.statusCode = statusCode;
-            }
-        };
-
-        var tokens = {};
-
-        service.createNewAuthenticatedUser(req, res, tokens);
-
-        // Get all users and ensure the number of users are still the same as the ones seeded by the seeder
-
-        done();
-    });
-
     it('should fail validation for non alpha num code in callback', (done) => {
 
         request(app)
                 .get('/callback?code=bakshdjbr34--asd')
-                .expect(401)
                 .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(401);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
@@ -100,12 +81,13 @@ describe('Authentication + Authorization via Truelayer', () => {
 
             request(app)
                 .get('/callback?code=2')
-                .expect(200)
                 .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(200);
 
                     const results = res.body.Info;
 
-                    expect(results).toEqual(response);
+                    expect(results).toEqual(response.results);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
@@ -127,8 +109,9 @@ describe('Authentication + Authorization via Truelayer', () => {
 
         request(app)
             .get('/callback?code=2')
-            .expect(401)
             .end((err, res) => {
+
+                expect(res.statusCode).toEqual(502);
 
                 const xAuthSet = res.header.hasOwnProperty('x-auth');
 
@@ -162,8 +145,9 @@ describe('Authentication + Authorization via Truelayer', () => {
 
             request(app)
                 .get('/callback?code=2')
-                .expect(401)
                 .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(401);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 

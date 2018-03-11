@@ -47,16 +47,15 @@ const refreshTokenIfExpired = async (req, res, token) => {
 
         try {
 
-            const token = await authClient.refreshAccessToken(token.refresh_token);
+            const refreshedToken = await authClient.refreshAccessToken(token.refresh_token);
 
             logger.info({
                 code: tracecodes.ACCESS_TOKEN_RENEWAL_SUCCESS,
                 url: req.originalUrl,
-                token: token
             });
 
             // we replace the old token with the new token
-            const generatedToken = await User.updateAuthToken(req.user_id, token.access_token, token.refresh_token);
+            const generatedToken = await User.updateAuthToken(req.user_id, refreshedToken.access_token, refreshedToken.refresh_token);
 
             logger.info({
                 code: tracecodes.APP_AUTH_TOKEN_GENERATED,
@@ -78,7 +77,7 @@ const refreshTokenIfExpired = async (req, res, token) => {
         };
     }
 
-    return req.token;
+    return token;
 };
 
 /**
@@ -148,6 +147,8 @@ const getTransactionsResponse = async (req, res) => {
                 app_token: token.app_token,
                 account_id: accountId,
             });
+
+            req.accounts[i].count = accountTransactions.length;
 
             req.accounts[i].transactions = accountTransactions;
 
@@ -219,19 +220,24 @@ const saveAccountTransactions = async (req, res, transactions, accountId) => {
 const getUserTransactions = async (userId) => {
 
     try {
-        const transactions = await client.getAsync(`${userId}_transactions`);
+        var transactions = await client.getAsync(`${userId}_transactions`);
 
-        logger.info({
-            code: tracecodes.FETCHED_TRANSACTIONS_FROM_REDIS,
-            transactions: JSON.parse(transactions)
-        });
+        //
+        // If the data is present in Redis, we return it.
+        // If not, we fetch it from the DB.
+        //
+        if (transactions !== null) {
 
-        return JSON.parse(transactions);
+            logger.info({
+                code: tracecodes.FETCHED_TRANSACTIONS_FROM_REDIS,
+                transactions: JSON.parse(transactions)
+            });
 
-    } catch (Error) {
+            return JSON.parse(transactions);
+        }
 
         // TODO: Should this be await?
-        const transactions = await Transactions.fetchByUserId(userId)
+        var transactions = await Transactions.fetchByUserId(userId)
 
         logger.info({
             code: tracecodes.FETCHED_TRANSACTIONS_FROM_DB,
@@ -242,6 +248,11 @@ const getUserTransactions = async (userId) => {
         // TODO: Test this case thoroughly
 
         return transactions;
+
+    } catch (Error) {
+
+        // We weren't able to fetch from redis or from the DB
+        return;
     }
 };
 

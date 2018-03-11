@@ -13,7 +13,12 @@ const {users, populateUsers} = require('@seed/seed');
 const service                = require('@services/account/Service');
 
 // run seed before each test case
-beforeEach(populateUsers);
+before(() => {
+  return new Promise((resolve) => {
+      populateUsers();
+      resolve();
+  });
+});
 
 describe('Test account transactions', () => {
 
@@ -25,7 +30,7 @@ describe('Test account transactions', () => {
         // as an exception will be caught
         //
         request(app)
-            .get('/account/1/transactions')
+            .get('/user/transactions')
             .expect(401)
             .end(done);
     });
@@ -37,7 +42,7 @@ describe('Test account transactions', () => {
         // So middleware sends back a 401
         //
         request(app)
-            .get('/account/1/transactions')
+            .get('/user/transactions')
             .set('x-auth', 'random token')
             .expect(401)
             .end(done);
@@ -56,7 +61,7 @@ describe('Test account transactions', () => {
         // So middleware sends back a 401
         //
         request(app)
-            .get('/account/1/transactions')
+            .get('/user/transactions')
             .set('x-auth', token)
             .expect(401)
             .end(done);
@@ -69,20 +74,31 @@ describe('Test account transactions', () => {
 
             const response = require(__dirname + '/json/transactions.json');
 
+            var accountId = 'f1234560abf9f57287637624def390871';
+
+            const accounts = require(__dirname + '/json/accounts.json');
+
             nock('https://api.truelayer.com')
-                .get('/data/v1/accounts/1/transactions')
+                .get('/data/v1/accounts')
+                .reply(200, accounts)
+
+
+            nock('https://api.truelayer.com')
+                .get(`/data/v1/accounts/${accountId}/transactions`)
                 .reply(200, response)
 
             request(app)
-                .get('/account/1/transactions')
-                .set('x-auth', users[1].tokens[0].token)
+                .get('/user/transactions')
+                .set('x-auth', users[1].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(200);
 
                     const results = res.body.Transactions;
 
-                    expect(results).toEqual(response);
+                    const apiResponse = require(__dirname + '/json/transactions-response.json');
+
+                    expect(results).toEqual(apiResponse);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
@@ -100,13 +116,22 @@ describe('Test account transactions', () => {
         // We want to run this test case only with a valid token in the env
         if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
 
+            var accountId = 'f1234560abf9f57287637624def390871';
+
+            const accounts = require(__dirname + '/json/accounts.json');
+
             nock('https://api.truelayer.com')
-                .get('/data/v1/accounts/1/transactions')
+                .get('/data/v1/accounts')
+                .reply(200, accounts)
+
+
+            nock('https://api.truelayer.com')
+                .get(`/data/v1/accounts/${accountId}/transactions`)
                 .reply(400, {error: "invalid_access_token"})
 
             request(app)
-                .get('/account/1/transactions')
-                .set('x-auth', users[1].tokens[0].token)
+                .get('/user/transactions')
+                .set('x-auth', users[1].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(400);
@@ -132,8 +157,8 @@ describe('Test account transactions', () => {
                 .reply(400, {error: "invalid renewal token"});
 
             request(app)
-                .get('/account/2/transactions')
-                .set('x-auth', users[2].tokens[0].token)
+                .get('/user/transactions')
+                .set('x-auth', users[2].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(400);
@@ -164,13 +189,22 @@ describe('Test account transactions', () => {
 
             const response = require(__dirname + '/json/transactions.json');
 
+            var accountId = 'f1234560abf9f57287637624def390871';
+
+            const accounts = require(__dirname + '/json/accounts.json');
+
             nock('https://api.truelayer.com')
-                .get('/data/v1/accounts/3/transactions')
+                .get('/data/v1/accounts')
+                .reply(200, accounts)
+
+
+            nock('https://api.truelayer.com')
+                .get(`/data/v1/accounts/${accountId}/transactions`)
                 .reply(200, response)
 
             request(app)
-                .get('/account/3/transactions')
-                .set('x-auth', users[2].tokens[0].token)
+                .get('/user/transactions')
+                .set('x-auth', users[2].app_token)
                 .end((err, res) => {
 
                     expect(res.statusCode).toEqual(200);
@@ -185,33 +219,5 @@ describe('Test account transactions', () => {
             done();
         }
 
-    });
-
-    it('should not save transactions without results as main key of response json', async (done) => {
-
-        req = {
-            originalUrl: '/account/1/transactions',
-            params: {
-                account_id: 1
-            },
-            user: {
-                _id: users[2]._id,
-            }
-        };
-
-        res = {
-            statusCode: 200,
-            sendStatus: (statusCode) => {
-                this.statusCode = statusCode;
-            }
-        };
-
-        const transactions = require('./json/transactions.json');
-
-        service.saveAccountTransactionsToUser(req, transactions.results, users[2].tokens[0]);
-
-        // Assert that the user doesn't have any transactions saved in the DB
-
-        done();
     });
 });
