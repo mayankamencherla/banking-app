@@ -44,7 +44,6 @@ module.exports.controller = (app) => {
             return;
         }
 
-        res.send({"Info": info});
+        res.send({"Info": info.results});
     });
-
 };

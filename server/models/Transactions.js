@@ -32,19 +32,19 @@ const saveTransactions = (transactions, accountId, userId) => {
 
     // TODO: See if there's a better way to handle duplicates
     return getTransactionRowsToSaveToDb(transactions, accountId, userId)
-            .then((filteredRows) => {
+        .then((filteredRows) => {
 
-                logger.info({
-                    code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
-                    rows: filteredRows
-                });
-
-                return knex.batchInsert('transactions', filteredRows, 10000)
-                           .then(() => {
-
-                               return Promise.resolve(filteredRows);
-                           });
+            logger.info({
+                code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
+                rows: filteredRows
             });
+
+            return knex.batchInsert('transactions', filteredRows, 10000)
+               .then(() => {
+
+                   return Promise.resolve(filteredRows);
+               });
+        });
 };
 
 const fetchByUserId = (userId) => {

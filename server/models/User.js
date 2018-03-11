@@ -57,15 +57,16 @@ const updateAuthToken = (id, access_token, refresh_token) => {
     };
 
     // Update the row corresponding to the ID
-    return knex('user').where('id', id)
-                       .update(dataToUpdate)
-                       .then(() => {
+    return knex('user')
+        .where('id', id)
+        .update(dataToUpdate)
+        .then(() => {
 
-                            return Promise.resolve({
-                                app_token: token,
-                                access_token: dataToUpdate.truelayer_refresh_token,
-                            });
-                       });
+            return Promise.resolve({
+                app_token: token,
+                access_token: dataToUpdate.truelayer_refresh_token,
+            });
+        });
 };
 
 const findByToken = (token) => {
@@ -83,11 +84,12 @@ const findByToken = (token) => {
     }
 
     // Select based on the token and the decoded id
-    return knex('user').where({
-        id: decoded.id,
-        app_token: token
-    })
-    .first();
+    return knex('user')
+        .where({
+            id: decoded.id,
+            app_token: token
+        })
+        .first();
 };
 
 module.exports.User = {

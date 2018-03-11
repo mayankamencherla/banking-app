@@ -45,44 +45,40 @@ const refreshTokenIfExpired = async (req, res, token) => {
             app_token: token.app_token,
         });
 
-        // get new access token and replace the existing token
-        // What if wrong info passed here? exception handling??
-        await authClient.refreshAccessToken(token.refresh_token)
-                        .then(async (token) => {
+        try {
 
-                            logger.info({
-                                code: tracecodes.ACCESS_TOKEN_RENEWAL_SUCCESS,
-                                url: req.originalUrl,
-                            });
+            const token = await authClient.refreshAccessToken(token.refresh_token);
 
-                            // we replace the old token with the new token
-                            await User.updateAuthToken(req.user_id, token.access_token, token.refresh_token)
-                                    .then((token) => {
+            logger.info({
+                code: tracecodes.ACCESS_TOKEN_RENEWAL_SUCCESS,
+                url: req.originalUrl,
+                token: token
+            });
 
-                                        logger.info({
-                                            code: tracecodes.APP_AUTH_TOKEN_GENERATED,
-                                            app_token: token.app_token,
-                                        });
+            // we replace the old token with the new token
+            const generatedToken = await User.updateAuthToken(req.user_id, token.access_token, token.refresh_token);
 
-                                        // The new token is set in the request for
-                                        // later usage in the transaction fetch flow
-                                        req.token = token;
+            logger.info({
+                code: tracecodes.APP_AUTH_TOKEN_GENERATED,
+                app_token: generatedToken.app_token,
+            });
 
-                                        return;
-                                    });
-                        })
-                        .catch((e) => {
+            return generatedToken;
 
-                            logger.error({
-                                code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
-                                url: req.originalUrl,
-                                error: e
-                            });
+        } catch (e) {
 
-                            // Bad request
-                            res.sendStatus(400);
-                        });
+            logger.error({
+                code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
+                url: req.originalUrl,
+                error: e
+            });
+
+            // Bad request
+            res.sendStatus(400);
+        };
     }
+
+    return req.token;
 };
 
 /**
@@ -136,8 +132,6 @@ const getTransactionsResponse = async (req, res) => {
     }
 
     var token = req.token;
-
-    // TODO: Group by req.accounts - map them to transactions
 
     try {
 
