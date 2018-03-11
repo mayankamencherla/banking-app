@@ -84,10 +84,10 @@ const findByToken = (token) => {
 
     // Select based on the token and the decoded id
     return knex('user').where({
-                            id: decoded.id,
-                            app_token: token
-                        })
-                        .first();
+        id: decoded.id,
+        app_token: token
+    })
+    .first();
 };
 
 module.exports.User = {

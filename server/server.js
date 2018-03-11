@@ -1,9 +1,6 @@
 // Registering aliases throughout the server side application
 require("module-alias/register");
 
-// In-house files
-const {mongoose}                     = require('@db/mongoose');
-
 // built in libraries
 const fs                             = require('fs');
 const http                           = require('http');

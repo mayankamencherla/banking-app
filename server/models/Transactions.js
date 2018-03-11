@@ -55,8 +55,7 @@ const fetchByUserId = (userId) => {
     });
 
     // Select based on the token and the decoded id
-    return knex('transactions')
-            .where({user_id: userId});
+    return knex('transactions').where('user_id', userId);
 };
 
 /**
@@ -103,21 +102,22 @@ const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
    });
 
     return knex('transactions')
-            .select('transaction_id')
-            .whereIn('transaction_id', transactionIds)
-            .then((savedTransactions) => {
+        .select('transaction_id')
+        .whereIn('transaction_id', transactionIds)
+        .then((savedTransactions) => {
 
-                savedTransactions = savedTransactions.map(transaction => transaction.transaction_id);
+            savedTransactions = savedTransactions.map(transaction => transaction.transaction_id);
 
-                // We don't want to insert transaction_ids that
-                // are already inserted into the DB
-                return _.filter(rows, (item) => {
+            // We don't want to insert transaction_ids that
+            // are already inserted into the DB
+            return _.filter(rows, (item) => {
 
-                    return !savedTransactions.includes(item.transaction_id);
-                });
-        });
+                return !savedTransactions.includes(item.transaction_id);
+            });
+    });
 };
 
 module.exports.Transactions = {
     saveTransactions,
+    fetchByUserId
 };

@@ -37,7 +37,6 @@
   "_moduleAliases": {
     "@models": "server/models",
     "@middleware": "server/middleware",
-    "@db": "server/db",
     "@controllers": "server/controllers",
     "@log": "server/log",
     "@tracecodes": "server/tracecodes/tracecodes",
