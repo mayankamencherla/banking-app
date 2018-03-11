@@ -7,9 +7,9 @@ module.exports.controller = (app) => {
 
     /**
      * This route is used to pull out the transactions for the
-     * specified account_id and save it into the DB for future usage.
+     * specified user. The user is identified based on the x-auth token
      */
-    app.get('/account/:account_id/transactions', authenticate, async (req, res) => {
+    app.get('/user/transactions', authenticate, async (req, res) => {
 
         //
         // This is an async call, as we make an async API call,
@@ -41,17 +41,21 @@ module.exports.controller = (app) => {
      * This route is used to pull out the transactions saved in the DB, and
      * return the min, max and average of amounts grouped by transaction categories.
      */
-    app.get('/account/:account_id/statistics', authenticate, async (req, res) => {
+    app.get('/user/statistics', authenticate, async (req, res) => {
 
         logger.info({
             code: tracecodes.CUSTOMER_ACCOUNT_STATS_REQUEST,
             url: req.originalUrl,
-            account_id: req.params.account_id,
+            user_id: req.user_id,
         });
 
-        const transactions = req.user.transactions;
+        // We fetch transactions from redis,
+        // and if redis is empty, we fetch the data from the DB
+        const transactions = await service.getUserTransactions(req.user_id);
 
-        if (transactions.length === 0) {
+        // TODO: Await must be in a try catch block
+        if (typeof transactions === 'undefined' ||
+            transactions.length === 0) {
 
             // Return early if transactions are not saved in the DB
             service.handleTransactionsEmpty(req, res);
@@ -62,7 +66,7 @@ module.exports.controller = (app) => {
         const responseObj = service.getTxnCategoryStats(req, transactions);
 
         // TODO: Don't cache the response in the browser, cache it in the app
-        res.setHeader('x-auth', req.user.tokens[0].token);
+        res.setHeader('x-auth', req.token.app_token);
         res.json({"Statistics": responseObj});
     });
 

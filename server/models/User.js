@@ -72,7 +72,7 @@ const findByToken = (token) => {
 
     logger.info({
         code: tracecodes.FIND_USER_BY_TOKEN_REQUEST,
-        app_token: token,
+        app_token: token
     });
 
     try {

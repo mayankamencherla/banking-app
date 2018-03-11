@@ -12,6 +12,11 @@ const {tracecodes}                   = require('@tracecodes');
 const _                              = require('lodash');
 const envalid                        = require('envalid');
 const {AuthAPIClient, DataAPIClient} = require('truelayer-client');
+const redis                          = require("redis");
+const Promise                        = require('bluebird');
+
+// Create a redis client
+const client = Promise.promisifyAll(redis.createClient());
 
 // Cleaning the environment variables, TODO: Move this out to a different file
 const env = envalid.cleanEnv(process.env, {
@@ -187,14 +192,14 @@ const saveAccountTransactions = async (req, res, transactions, accountId) => {
     // TODO: Do a dirty check and update only if different
     // TODO: Save this into the transactions DB
     await Transactions.saveTransactions(transactions, accountId, req.user_id)
-        .then((results) => {
+        .then((savedTransactions) => {
 
             logger.info({
                 code: tracecodes.CUSTOMER_TRANSACTIONS_SAVED,
                 url: req.originalUrl,
-                transactions: results,
+                transactions: savedTransactions,
                 app_token: req.token.app_token,
-                account_id: accountId
+                account_id: accountId,
             });
         })
         .catch((e) => {
@@ -215,6 +220,38 @@ const saveAccountTransactions = async (req, res, transactions, accountId) => {
 };
 
 /**
+ * Get the user transactions from redis or the DB
+ */
+const getUserTransactions = async (userId) => {
+
+    try {
+        const transactions = await client.getAsync(`${userId}_transactions`);
+
+        logger.info({
+            code: tracecodes.FETCHED_TRANSACTIONS_FROM_REDIS,
+            transactions: JSON.parse(transactions)
+        });
+
+        return JSON.parse(transactions);
+
+    } catch (Error) {
+
+        // TODO: Should this be await?
+        const transactions = await Transactions.fetchByUserId(userId)
+
+        logger.info({
+            code: tracecodes.FETCHED_TRANSACTIONS_FROM_DB,
+            transactions: transactions
+        });
+
+        // What if no transactions exist in user id
+        // TODO: Test this case thoroughly
+
+        return transactions;
+    }
+};
+
+/**
  * Logs that the transactions response is empty, and sends a 400 to the user
  * This case happens when the user hits the statistics route before fetching
  * all of his transactions from the transactions route.
@@ -224,7 +261,7 @@ const handleTransactionsEmpty = (req, res) => {
     logger.error({
         code: tracecodes.CUSTOMER_TRANSACTIONS_NOT_SAVED,
         url: req.originalUrl,
-        account_id: req.params.account_id,
+        user_id: req.user_id,
     });
 
     res.sendStatus(400);
@@ -279,8 +316,8 @@ const getTxnCategoryStats = (req, transactions) => {
     logger.info({
         code: tracecodes.CUSTOMER_ACCOUNT_STATS_RESPONSE,
         url: req.originalUrl,
-        account_id: req.params.account_id,
-        app_token: req.user.tokens[0].token,
+        user_id: req.user_id,
+        app_token: req.token.app_token,
         statistics: responseObj,
     });
 
@@ -314,5 +351,6 @@ module.exports = {
     handleTransactionsEmpty,
     getTxnCategoryStats,
     saveAccountTransactions,
-    fetchAllUserAccounts
+    fetchAllUserAccounts,
+    getUserTransactions
 };

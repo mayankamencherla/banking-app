@@ -10,6 +10,7 @@
   "author": "mayankamencherla",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "dotenv": "^5.0.1",
     "envalid": "^3.1.1",
@@ -19,7 +20,6 @@
     "lodash": "^4.17.5",
     "module-alias": "^2.0.6",
     "mongodb": "^3.0.3",
-    "mongoose": "^5.0.7",
     "mysql": "^2.15.0",
     "redis": "^2.8.0",
     "truelayer-client": "^1.0.9",

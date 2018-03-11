@@ -3,6 +3,10 @@ const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
 
 const _                              = require('lodash');
+const redis                          = require("redis");
+
+// Create a redis client
+const client = redis.createClient();
 
 /**
  * Transactions is an object containining account_id and
@@ -28,19 +32,31 @@ const saveTransactions = (transactions, accountId, userId) => {
 
     // TODO: See if there's a better way to handle duplicates
     return getTransactionRowsToSaveToDb(transactions, accountId, userId)
-            .then((rows) => {
+            .then((filteredRows) => {
 
                 logger.info({
                     code: tracecodes.SAVE_TRANSACTIONS_REQUEST,
-                    rows: rows
+                    rows: filteredRows
                 });
 
-                return knex.batchInsert('transactions', rows, 10000)
+                return knex.batchInsert('transactions', filteredRows, 10000)
                            .then(() => {
 
-                               return Promise.resolve(rows);
+                               return Promise.resolve(filteredRows);
                            });
             });
+};
+
+const fetchByUserId = (userId) => {
+
+    logger.info({
+        code: tracecodes.FIND_TRANSACTIONS_BY_USER,
+        user_id: userId
+    });
+
+    // Select based on the token and the decoded id
+    return knex('transactions')
+            .where({user_id: userId});
 };
 
 /**
@@ -69,12 +85,22 @@ const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
         return result;
     });
 
+    //
+    // Caching transactions in redis for 1 day
+    // We do this so that this data can be quickly accessed
+    // in case there is a need to compute some information about it
+    //
+    client.set(`${userId}_transactions`,
+                JSON.stringify(rows),
+                'EX',
+                86400);
+
     const transactionIds = _.map(rows, (transaction) => {
 
-                                var result = _.pick(transaction, 'transaction_id');
+        var result = _.pick(transaction, 'transaction_id');
 
-                                return result.transaction_id;
-                           });
+        return result.transaction_id;
+   });
 
     return knex('transactions')
             .select('transaction_id')
@@ -87,8 +113,8 @@ const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
                 // are already inserted into the DB
                 return _.filter(rows, (item) => {
 
-                            return !savedTransactions.includes(item.transaction_id);
-                        });
+                    return !savedTransactions.includes(item.transaction_id);
+                });
         });
 };
 
