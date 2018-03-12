@@ -2,6 +2,8 @@ const {User}        = require('@models/User');
 const {logger}      = require('@log/logger');
 const {tracecodes}  = require('@tracecodes');
 const {decrypt}     = require('@utils/crypto');
+const {errorcodes}                   = require('@errorcodes');
+const {getErrorJson}                 = require('@ApiError');
 
 
 // This method redirects to the truelayer authentication url
@@ -20,7 +22,9 @@ const authenticate = (req, res, next) => {
             url: req.originalUrl
         });
 
-        res.sendStatus(401);
+        res.status(401).json(
+            getErrorJson(401, errorcodes.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE)
+        );
 
         return;
     }
@@ -64,10 +68,10 @@ const authenticate = (req, res, next) => {
             url: req.originalUrl,
         });
 
-        res.status(401).json({
-            Error: 'Unauthorized',
-            Message: 'User not authenticated.'
-        }); // unauthorized
+        // unauthorized
+        res.status(401).json(
+            getErrorJson(401, errorcodes.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE)
+        );
     });
 };
 

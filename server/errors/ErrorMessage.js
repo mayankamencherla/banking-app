@@ -13,11 +13,12 @@ const errormessages = {
     SERVER_ERROR_TRANSATIONS_FETCH_FAILURE  : 'There was an error while fetching customer account transactions',
 
     // Internal Server Errors
-    API_ERROR_USER_GENERATION_FAILED      : 'User was not saved on API. Please try again later',
-    API_ERROR_TOKEN_UPDATE_FAILED         : 'Token update failed on API',
+    API_ERROR_USER_GENERATION_FAILED         : 'User was not saved on API. Please try again later',
+    API_ERROR_TOKEN_UPDATE_FAILED            : 'Token update failed on API',
 
     // Bad Request Errors
-    BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY  : 'Customer transactions have not yet been saved on API. Please make a request to the /user/transactions route and then retry this request'
+    BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY     : 'Customer transactions have not yet been saved on API. Please make a request to the /user/transactions route and then retry this request',
+    BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE : 'User is not authenticated',
 };
 
 module.exports = {errormessages};
