@@ -7,6 +7,8 @@ const {DataAPIClient}        = require('truelayer-client');
 
 const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
+const {errorcodes}           = require('@errorcodes');
+const {errormessages}        = require('@errormessages');
 
 const {users, populateUsers, populateTransactions} = require('@seed/seed');
 
@@ -74,6 +76,16 @@ describe('Test account transaction statistics route', () => {
                 const xAuthSet = res.header.hasOwnProperty('x-auth');
 
                 expect(xAuthSet).toEqual(false);
+
+                const errorCode = errorcodes.BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY;
+
+                const errorMessage = errormessages.BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY;
+
+                expect(res.body).toEqual({
+                    http_status_code: 400,
+                    error: errorCode,
+                    error_message: errorMessage
+                });
 
                 done();
             });
