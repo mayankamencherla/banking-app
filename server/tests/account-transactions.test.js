@@ -111,6 +111,33 @@ describe('Test account transactions', () => {
         }
     });
 
+    it('should pass authentication and fail account fetch', (done) => {
+
+        // We want to run this test case only with a valid token in the env
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            nock('https://api.truelayer.com')
+                .get('/data/v1/accounts')
+                .reply(400, {error: "invalid_access_token"});
+
+            request(app)
+                .get('/user/transactions')
+                .set('x-auth', users[0].app_token)
+                .end((err, res) => {
+
+                    expect(res.statusCode).toEqual(400);
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    expect(xAuthSet).toEqual(false);
+
+                    done();
+                });
+        } else {
+            done();
+        }
+    });
+
     it('should pass authentication and fail at transactions fetch', (done) => {
 
         // We want to run this test case only with a valid token in the env

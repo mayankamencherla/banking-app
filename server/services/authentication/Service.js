@@ -129,7 +129,6 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
             error: e
         });
 
-        //
         if (res.headersSent === false) {
 
             res.status(500).json(

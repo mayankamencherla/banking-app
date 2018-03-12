@@ -164,5 +164,4 @@ describe('Authentication + Authorization via Truelayer', () => {
             done();
         }
     });
-
 });
