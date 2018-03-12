@@ -90,9 +90,12 @@ const refreshTokenIfExpired = async (req, res, token) => {
                 error: e
             });
 
-            res.status(500).json(
-                getErrorJson(500, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
-            );
+            if (res.headersSend === false) {
+
+                res.status(500).json(
+                    getErrorJson(500, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
+                );
+            }
         }
     }
 

@@ -13,6 +13,7 @@ const {users, populateUsers} = require('@seed/seed');
 const service                = require('@services/account/Service');
 const {errorcodes}           = require('@errorcodes');
 const {errormessages}        = require('@errormessages');
+const knex                   = require('knex')(require('./../knexfile'));
 
 // run seed before each test case
 before(() => {
@@ -146,7 +147,7 @@ describe('Test account transactions', () => {
             request(app)
                 .get('/user/transactions')
                 .set('x-auth', users[0].app_token)
-                .end((err, res) => {
+                .end(async (err, res) => {
 
                     expect(res.statusCode).toEqual(200);
 
@@ -159,6 +160,11 @@ describe('Test account transactions', () => {
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
                     expect(xAuthSet).toEqual(true);
+
+                    const transactions = await knex('transactions')
+                                        .where('user_id', users[0].id);
+
+                    expect(transactions.length === 0).toEqual(false);
 
                     done();
                 });
@@ -227,21 +233,19 @@ describe('Test account transactions', () => {
                 .set('x-auth', users[0].app_token)
                 .end((err, res) => {
 
-                    expect(res.statusCode).toEqual(400);
+                    expect(res.statusCode).toEqual(200);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
-                    expect(xAuthSet).toEqual(false);
+                    expect(xAuthSet).toEqual(true);
 
-                    const errorCode = errorcodes.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE;
-
-                    const errorMessage = errormessages.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE;
-
-                    expect(res.body).toEqual({
-                        http_status_code: 400,
-                        error: errorCode,
-                        error_message: errorMessage
-                    });
+                    // When transaction fetch fails, API returns
+                    // an array with accountId and [] for transactions
+                    expect(res.body.Transactions).toEqual([{
+                        account_id: "f1234560abf9f57287637624def390871",
+                        count: 0,
+                        transactions: []
+                    }]);
 
                     done();
                 });
@@ -318,7 +322,7 @@ describe('Test account transactions', () => {
             request(app)
                 .get('/user/transactions')
                 .set('x-auth', users[1].app_token)
-                .end((err, res) => {
+                .end(async (err, res) => {
 
                     expect(res.statusCode).toEqual(200);
 
@@ -331,6 +335,11 @@ describe('Test account transactions', () => {
                     const apiResponse = require(__dirname + '/json/transactions-response.json');
 
                     expect(results).toEqual(apiResponse);
+
+                    const transactions = await knex('transactions')
+                                        .where('user_id', users[0].id);
+
+                    expect(transactions.length === 0).toEqual(false);
 
                     done();
                 });

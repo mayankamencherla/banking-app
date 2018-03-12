@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const knex                   = require('knex')(require('./../knexfile'));
 const expect                 = require('expect');
 const request                = require('supertest');
 const nock                   = require('nock');
@@ -31,53 +32,53 @@ describe('Authentication + Authorization via Truelayer', () => {
     it('should handle unauthorized callback from Truelayer', (done) => {
 
         request(app)
-                .get('/callback?error=access_denied')
-                .end((err, res) => {
+            .get('/callback?error=access_denied')
+            .end((err, res) => {
 
-                    expect(res.statusCode).toEqual(401);
+                expect(res.statusCode).toEqual(401);
 
-                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
 
-                    expect(xAuthSet).toEqual(false);
+                expect(xAuthSet).toEqual(false);
 
-                    const errorCode = errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+                const errorCode = errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
 
-                    const errorMessage = errormessages.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+                const errorMessage = errormessages.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
 
-                    expect(res.body).toEqual({
-                        http_status_code: 401,
-                        error: errorCode,
-                        error_message: errorMessage
-                    });
-
-                    done();
+                expect(res.body).toEqual({
+                    http_status_code: 401,
+                    error: errorCode,
+                    error_message: errorMessage
                 });
+
+                done();
+            });
     });
 
     it('should fail validation for non alpha num code in callback', (done) => {
 
         request(app)
-                .get('/callback?code=bakshdjbr34--asd')
-                .end((err, res) => {
+            .get('/callback?code=bakshdjbr34--asd')
+            .end((err, res) => {
 
-                    expect(res.statusCode).toEqual(401);
+                expect(res.statusCode).toEqual(401);
 
-                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
 
-                    expect(xAuthSet).toEqual(false);
+                expect(xAuthSet).toEqual(false);
 
-                    const errorCode = errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+                const errorCode = errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
 
-                    const errorMessage = errormessages.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+                const errorMessage = errormessages.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
 
-                    expect(res.body).toEqual({
-                        http_status_code: 401,
-                        error: errorCode,
-                        error_message: errorMessage
-                    });
-
-                    done();
+                expect(res.body).toEqual({
+                    http_status_code: 401,
+                    error: errorCode,
+                    error_message: errorMessage
                 });
+
+                done();
+            });
     });
 
     it('should handle callback from Truelayer Authorization server', (done) => {
@@ -103,7 +104,7 @@ describe('Authentication + Authorization via Truelayer', () => {
 
             request(app)
                 .get('/callback?code=2')
-                .end((err, res) => {
+                .end(async (err, res) => {
 
                     expect(res.statusCode).toEqual(200);
 
@@ -114,6 +115,10 @@ describe('Authentication + Authorization via Truelayer', () => {
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
                     expect(xAuthSet).toEqual(true);
+
+                    const users = await knex('user').select();
+
+                    expect(users.length).toEqual(3);
 
                     done();
                 });
