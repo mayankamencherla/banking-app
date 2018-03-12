@@ -41,6 +41,7 @@
     "@log": "server/log",
     "@tracecodes": "server/tracecodes/tracecodes",
     "@errorcodes": "server/errors/ErrorCodes",
+    "@errormessages": "server/errors/ErrorMessage",
     "@ApiError": "server/errors/ApiError",
     "@services": "server/services",
     "@seed": "server/tests/seed",

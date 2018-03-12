@@ -8,6 +8,8 @@ const {DataAPIClient}        = require('truelayer-client');
 const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
 const service                = require('@services/authentication/Service');
+const {errorcodes}           = require('@errorcodes');
+const {errormessages}        = require('@errormessages');
 
 // Test for authentication flow
 describe('Authentication + Authorization via Truelayer', () => {
@@ -38,6 +40,16 @@ describe('Authentication + Authorization via Truelayer', () => {
 
                     expect(xAuthSet).toEqual(false);
 
+                    const errorCode = errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+
+                    const errorMessage = errormessages.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+
+                    expect(res.body).toEqual({
+                        http_status_code: 401,
+                        error: errorCode,
+                        error_message: errorMessage
+                    });
+
                     done();
                 });
     });
@@ -53,6 +65,16 @@ describe('Authentication + Authorization via Truelayer', () => {
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
                     expect(xAuthSet).toEqual(false);
+
+                    const errorCode = errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+
+                    const errorMessage = errormessages.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR;
+
+                    expect(res.body).toEqual({
+                        http_status_code: 401,
+                        error: errorCode,
+                        error_message: errorMessage
+                    });
 
                     done();
                 });
@@ -117,6 +139,16 @@ describe('Authentication + Authorization via Truelayer', () => {
 
                 expect(xAuthSet).toEqual(false);
 
+                const errorCode = errorcodes.SERVER_ERROR_TOKEN_EXCHANGE_FAILURE;
+
+                const errorMessage = errormessages.SERVER_ERROR_TOKEN_EXCHANGE_FAILURE;
+
+                expect(res.body).toEqual({
+                    http_status_code: 502,
+                    error: errorCode,
+                    error_message: errorMessage
+                });
+
                 done();
             });
     });
@@ -156,6 +188,16 @@ describe('Authentication + Authorization via Truelayer', () => {
                     // in the step before gaining access to the user info
                     //
                     expect(xAuthSet).toEqual(true);
+
+                    const errorCode = errorcodes.SERVER_ERROR_CUSTOMER_INFO_FETCH_FAILED;
+
+                    const errorMessage = errormessages.SERVER_ERROR_CUSTOMER_INFO_FETCH_FAILED;
+
+                    expect(res.body).toEqual({
+                        http_status_code: 401,
+                        error: errorCode,
+                        error_message: errorMessage
+                    });
 
                     done();
                 });
