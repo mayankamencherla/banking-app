@@ -199,6 +199,7 @@ const getMultipleAccountsTransactions = async (req, res) => {
 
         var accountId = account.account_id;
 
+        // TODO: What if one of the promises fails?
         return DataAPIClient.getTransactions(token.access_token, accountId)
             .then((transactions) => {
 
@@ -214,6 +215,22 @@ const getMultipleAccountsTransactions = async (req, res) => {
                     account_id: accountId,
                     count: transactions.results.length,
                     transactions: transactions.results,
+                };
+            })
+            .catch((e) => {
+
+                // TODO: Add a test case for this
+                logger.info({
+                    code: tracecodes.TRANSACTIONS_FETCH_FAILED,
+                    url: req.originalUrl,
+                    app_token: token.app_token,
+                    error: e
+                });
+
+                return {
+                    account_id: accountId,
+                    count: 0,
+                    transactions: [],
                 };
             });
     });
