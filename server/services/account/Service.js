@@ -162,13 +162,6 @@ const getTransactionsResponse = async (req, res) => {
             app_token: token.app_token,
         });
 
-        // We save the user's new transactions into the DB
-        transactions.forEach((accountTxns) => {
-
-            // We save account transactions one account at a time
-            saveAccountTransactions(req, accountTxns.transactions, accountTxns.account_id);
-        });
-
         // If no errors occurred in the flow above, we can return
         // token as a header as the transactions were saved in the DB
         if (res.headersSent === false) {
@@ -210,6 +203,9 @@ const getMultipleAccountsTransactions = async (req, res) => {
                     app_token: token.app_token,
                     account_id: accountId,
                 });
+
+                // We save account transactions one account at a time
+                saveAccountTransactions(req, transactions.results, accountId);
 
                 return {
                     account_id: accountId,
