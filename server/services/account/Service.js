@@ -153,35 +153,20 @@ const getTransactionsResponse = async (req, res) => {
 
     try {
 
-        for (let i=0; i<req.accounts.length; i++) {
-
-            var accountId = req.accounts[i].account_id;
-
-            var accountTransactions = (await DataAPIClient.getTransactions(token.access_token, accountId)).results;
-
-            logger.info({
-                code: tracecodes.ACCOUNT_TRANSACTIONS_RESPONSE,
-                url: req.originalUrl,
-                transactions: accountTransactions,
-                app_token: token.app_token,
-                account_id: accountId,
-            });
-
-            req.accounts[i].count = accountTransactions.length;
-
-            req.accounts[i].transactions = accountTransactions;
-
-            // We save account transactions one account at a time
-            saveAccountTransactions(req, res, accountTransactions, accountId);
-        }
-
-        transactions = req.accounts;
+        const transactions = await Promise.all(getMultipleAccountsTransactions(req, res));
 
         logger.info({
             code: tracecodes.CUSTOMER_TRANSACTIONS_RESPONSE,
             url: req.originalUrl,
             transactions: transactions,
             app_token: token.app_token,
+        });
+
+        // We save the user's new transactions into the DB
+        transactions.forEach((accountTxns) => {
+
+            // We save account transactions one account at a time
+            saveAccountTransactions(req, accountTxns.transactions, accountTxns.account_id);
         });
 
         // If no errors occurred in the flow above, we can return
@@ -199,10 +184,46 @@ const getTransactionsResponse = async (req, res) => {
 };
 
 /**
+ * This method takes in an array of accountIds,
+ * and makes requests to the Truelayer server to fetch
+ * each accounts transactions asynchronously.
+ */
+const getMultipleAccountsTransactions = async (req, res) => {
+
+    var token = req.token;
+
+    const accounts = req.accounts;
+
+    // Returns an array of promises for each account of the user
+    return accounts.map((account) => {
+
+        var accountId = account.account_id;
+
+        return DataAPIClient.getTransactions(token.access_token, accountId)
+            .then((transactions) => {
+
+                logger.info({
+                    code: tracecodes.ACCOUNT_TRANSACTIONS_RESPONSE,
+                    url: req.originalUrl,
+                    transactions: transactions,
+                    app_token: token.app_token,
+                    account_id: accountId,
+                });
+
+                return {
+                    account_id: accountId,
+                    count: transactions.results.length,
+                    transactions: transactions.results,
+                };
+            });
+    });
+};
+
+/**
  * We must save the fetched transactions to the DB.
  * We are doing this asynchronously so that API response time is reduced.
  */
-const saveAccountTransactions = (req, res, transactions, accountId) => {
+const saveAccountTransactions = (req, transactions, accountId) => {
 
     // TODO: try catch
     Transactions.saveTransactions(transactions, accountId, req.user_id)
