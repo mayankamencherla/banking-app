@@ -161,7 +161,7 @@ describe('Test account transactions', () => {
                 .set('x-auth', users[1].app_token)
                 .end((err, res) => {
 
-                    expect(res.statusCode).toEqual(400);
+                    expect(res.statusCode).toEqual(502);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 

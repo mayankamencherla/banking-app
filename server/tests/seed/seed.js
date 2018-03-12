@@ -33,6 +33,8 @@ const users = [{
     truelayer_refresh_token: encrypt("random_refresh_token_that_will_fail_renewal")
 }];
 
+// Cleaning out the entire DB
+// TODO: Change this to a test db
 const populateUsers = async (done) => {
     // Remove all user seed and insert new
     await knex('user').del().then(async () => {

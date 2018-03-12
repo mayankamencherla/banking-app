@@ -7,6 +7,8 @@ const {User}                         = require('@models/User');
 const {Transactions}                 = require('@models/Transactions');
 const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
+const {errorcodes}                   = require('@errorcodes');
+const {getErrorJson}                 = require('@ApiError');
 
 // 3rd party libraries
 const _                              = require('lodash');
@@ -45,14 +47,31 @@ const refreshTokenIfExpired = async (req, res, token) => {
             app_token: token.app_token,
         });
 
+        let refreshedToken;
+
         try {
 
-            const refreshedToken = await authClient.refreshAccessToken(token.refresh_token);
+            refreshedToken = await authClient.refreshAccessToken(token.refresh_token);
 
             logger.info({
                 code: tracecodes.ACCESS_TOKEN_RENEWAL_SUCCESS,
                 url: req.originalUrl,
             });
+        } catch (e) {
+
+            logger.error({
+                code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
+                url: req.originalUrl,
+                error: e
+            });
+
+            // TODO: Is this the right way to do things?
+            res.status(502).json(
+                getErrorJson(502, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
+            );
+        };
+
+        try {
 
             // we replace the old token with the new token
             const generatedToken = await User.updateAuthToken(req.user_id, refreshedToken.access_token, refreshedToken.refresh_token);
@@ -63,18 +82,18 @@ const refreshTokenIfExpired = async (req, res, token) => {
             });
 
             return generatedToken;
-
         } catch (e) {
 
             logger.error({
-                code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
+                code: tracecodes.UPDATE_USER_ACCESS_TOKEN_FAILURE,
                 url: req.originalUrl,
                 error: e
             });
 
-            // Bad request
-            res.sendStatus(400);
-        };
+            res.status(500).json(
+                getErrorJson(500, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
+            );
+        }
     }
 
     return token;
@@ -113,7 +132,7 @@ const fetchAllUserAccounts = async (req, res) => {
 
     } catch (Error) {
 
-        returnApiFailure(req, res, Error);
+        returnApiFailure(req, res, Error, errorcodes.SERVER_ERROR_ACCOUNTS_FETCH_FAILURE);
     }
 };
 
@@ -153,7 +172,7 @@ const getTransactionsResponse = async (req, res) => {
             req.accounts[i].transactions = accountTransactions;
 
             // We save account transactions one account at a time
-            await saveAccountTransactions(req, res, accountTransactions, accountId);
+            saveAccountTransactions(req, res, accountTransactions, accountId);
         }
 
         transactions = req.accounts;
@@ -175,18 +194,18 @@ const getTransactionsResponse = async (req, res) => {
         }
     } catch (Error) {
 
-        returnApiFailure(req, res, Error);
+        returnApiFailure(req, res, Error, errorcodes.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE);
     }
 };
 
 /**
- * We must save the fetched transactions to the DB
+ * We must save the fetched transactions to the DB.
+ * We are doing this asynchronously so that API response time is reduced.
  */
-const saveAccountTransactions = async (req, res, transactions, accountId) => {
+const saveAccountTransactions = (req, res, transactions, accountId) => {
 
-    // TODO: Do a dirty check and update only if different
-    // TODO: Save this into the transactions DB
-    await Transactions.saveTransactions(transactions, accountId, req.user_id)
+    // TODO: try catch
+    Transactions.saveTransactions(transactions, accountId, req.user_id)
         .then((savedTransactions) => {
 
             logger.info({
@@ -208,9 +227,7 @@ const saveAccountTransactions = async (req, res, transactions, accountId) => {
             });
 
             // TODO: Saving one account's txns shouldn't halt the API???
-            if (res.headersSent === false) {
-                res.sendStatus(400);
-            }
+            // Figure out a clean way to handle this case
         });
 };
 
@@ -269,7 +286,9 @@ const handleTransactionsEmpty = (req, res) => {
         user_id: req.user_id,
     });
 
-    res.sendStatus(400);
+    res.status(400).json(
+        getErrorJson(400, errorcodes.BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY)
+    );
 };
 
 /**
@@ -280,7 +299,7 @@ const handleTransactionsEmpty = (req, res) => {
  */
 const getTxnCategoryStats = (req, transactions) => {
 
-    // TODO: Why is this not working like it should??
+    // TODO: Why is this not working like it should in test cases
     // All the amounts are in GBP
     const groupedTransactions = _.groupBy(transactions, tran => tran.transaction_category);
 
@@ -333,7 +352,7 @@ const getTxnCategoryStats = (req, transactions) => {
 /**
  * This method is used to log api failures and send a 400 to the user
  */
-const returnApiFailure = (req, res, error) => {
+const returnApiFailure = (req, res, error, errorCode) => {
 
     var dataToLog = {
         code: tracecodes.CUSTOMER_ACCOUNT_API_CALL_ERROR,
@@ -347,7 +366,7 @@ const returnApiFailure = (req, res, error) => {
     // If a response is already sent to the user, we don't resend the response
     if (res.headersSent === false) {
 
-        res.sendStatus(400);
+        res.status(400).json(getErrorJson(400, errorCode));
     }
 };
 

@@ -40,6 +40,8 @@
     "@controllers": "server/controllers",
     "@log": "server/log",
     "@tracecodes": "server/tracecodes/tracecodes",
+    "@errorcodes": "server/errors/ErrorCodes",
+    "@ApiError": "server/errors/ApiError",
     "@services": "server/services",
     "@seed": "server/tests/seed",
     "@utils": "server/utils"

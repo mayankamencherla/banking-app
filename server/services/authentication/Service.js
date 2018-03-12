@@ -8,6 +8,8 @@ require('dotenv').config();
 const {User}                         = require('@models/User');
 const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
+const {errorcodes}                   = require('@errorcodes');
+const {getErrorJson}                 = require('@ApiError');
 
 const {AuthAPIClient, DataAPIClient} = require('truelayer-client');
 const envalid                        = require('envalid');
@@ -70,7 +72,8 @@ const getTruelayerAuthToken = async (req, res) => {
         (validator.isAlphanumeric(req.query.code) === false)) {
 
         // This happens when the user doesn't accept authorization
-        returnCallbackFailure(req, res, tracecodes.AUTH_CALLBACK_ERROR, 401);
+        returnCallbackFailure(req, res, tracecodes.AUTH_CALLBACK_ERROR,
+            401, errorcodes.SERVER_ERROR_TRUELAYER_CALLBACK_ERROR);
 
         return;
     }
@@ -86,7 +89,8 @@ const getTruelayerAuthToken = async (req, res) => {
     } catch (Error) {
 
         // The code parameter wasn't correct, or the token exchange didn't go through
-        returnCallbackFailure(req, res, tracecodes.ERROR_EXCHANGING_CODE_FOR_TOKEN, 502);
+        returnCallbackFailure(req, res, tracecodes.ERROR_EXCHANGING_CODE_FOR_TOKEN, 502,
+            errorcodes.SERVER_ERROR_TOKEN_EXCHANGE_FAILURE);
 
         return;
     }
@@ -128,7 +132,9 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
         //
         if (res.headersSent === false) {
 
-            res.sendStatus(500);
+            res.status(500).json(
+                getErrorJson(500, errorcodes.API_ERROR_USER_GENERATION_FAILED)
+            );
         }
     });
 };
@@ -145,7 +151,6 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
         return;
     }
-
 
     //
     // Hit the info endpoint and get indentity of the customer once authentication is complete
@@ -174,27 +179,9 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
         // Likely error is invalid token, as we expect that
         // the Truelayer service is up and running
         //
-        returnCallbackFailure(req, res, tracecodes.ERROR_FETCHING_CUSTOMER_INFO, 401);
-    }
-};
-
-/**
- * Helper method used to failures in the callback route
- */
-const returnCallbackFailure = (req, res, traceCode, httpCode) => {
-
-    var dataToLog = {
-        code: traceCode,
-        url: req.originalUrl,
-        query: req.query,
-    };
-
-    logger.info(dataToLog);
-
-    // If a response is already sent to the user, we don't resend the response
-    if (res.headersSent === false) {
-
-        res.sendStatus(httpCode);
+        returnCallbackFailure(req, res,
+            tracecodes.ERROR_FETCHING_CUSTOMER_INFO, 401,
+            errorcodes.SERVER_ERROR_CUSTOMER_INFO_FETCH_FAILED);
     }
 };
 
@@ -210,12 +197,36 @@ const runTokenValidations = (req, res, tokens) => {
         (DataAPIClient.validateToken(tokens.access_token) === false)) {
 
         // Bad Gateway, as we get the tokens from Truelayer
-        returnCallbackFailure(req, res, tracecodes.TOKEN_VALIDATION_FAILURE, 502);
+        returnCallbackFailure(req, res,
+            tracecodes.TOKEN_VALIDATION_FAILURE, 502,
+            errorcodes.SERVER_ERROR_INVALID_TOKEN);
 
         return false;
     }
 
     return true;
+};
+
+/**
+ * Helper method used to failures in the callback route
+ */
+const returnCallbackFailure = (req, res, traceCode, httpCode, errorCode) => {
+
+    var dataToLog = {
+        code: traceCode,
+        url: req.originalUrl,
+        query: req.query,
+    };
+
+    logger.info(dataToLog);
+
+    // If a response is already sent to the user, we don't resend the response
+    if (res.headersSent === false) {
+
+        // TODO: This needs to change
+        // TODO: Try mapping this to an error object based on error code
+        res.status(httpCode).json(getErrorJson(httpCode, errorCode));
+    }
 };
 
 module.exports = {

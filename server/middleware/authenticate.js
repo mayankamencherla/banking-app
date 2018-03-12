@@ -64,7 +64,10 @@ const authenticate = (req, res, next) => {
             url: req.originalUrl,
         });
 
-        res.sendStatus(401); // unauthorized
+        res.status(401).json({
+            Error: 'Unauthorized',
+            Message: 'User not authenticated.'
+        }); // unauthorized
     });
 };
 
