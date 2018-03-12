@@ -11,6 +11,8 @@ const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
 const {users, populateUsers} = require('@seed/seed');
 const service                = require('@services/account/Service');
+const {errorcodes}           = require('@errorcodes');
+const {errormessages}        = require('@errormessages');
 
 // run seed before each test case
 before(() => {
@@ -31,8 +33,26 @@ describe('Test account transactions', () => {
         //
         request(app)
             .get('/user/transactions')
-            .expect(401)
-            .end(done);
+            .end((err, res) => {
+
+                expect(res.statusCode).toEqual(401);
+
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                expect(xAuthSet).toEqual(false);
+
+                const errorCode = errorcodes.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE;
+
+                const errorMessage = errormessages.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE;
+
+                expect(res.body).toEqual({
+                    http_status_code: 401,
+                    error: errorCode,
+                    error_message: errorMessage
+                });
+
+                done();
+            });
     });
 
     it('should assert that authentication fails and user not found', (done) => {
@@ -44,8 +64,26 @@ describe('Test account transactions', () => {
         request(app)
             .get('/user/transactions')
             .set('x-auth', 'random token')
-            .expect(401)
-            .end(done);
+            .end((err, res) => {
+
+                expect(res.statusCode).toEqual(401);
+
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                expect(xAuthSet).toEqual(false);
+
+                const errorCode = errorcodes.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE;
+
+                const errorMessage = errormessages.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE;
+
+                expect(res.body).toEqual({
+                    http_status_code: 401,
+                    error: errorCode,
+                    error_message: errorMessage
+                });
+
+                done();
+            });
     });
 
     it('should assert that user not found with invalid jwt token', (done) => {
@@ -63,8 +101,26 @@ describe('Test account transactions', () => {
         request(app)
             .get('/user/transactions')
             .set('x-auth', token)
-            .expect(401)
-            .end(done);
+            .end((err, res) => {
+
+                expect(res.statusCode).toEqual(401);
+
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                expect(xAuthSet).toEqual(false);
+
+                const errorCode = errorcodes.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE;
+
+                const errorMessage = errormessages.BAD_REQUEST_ERROR_AUTHENTICATION_FAILURE;
+
+                expect(res.body).toEqual({
+                    http_status_code: 401,
+                    error: errorCode,
+                    error_message: errorMessage
+                });
+
+                done();
+            });
     });
 
     it('should pass authentication and fetch transactions', (done) => {
@@ -131,6 +187,16 @@ describe('Test account transactions', () => {
 
                     expect(xAuthSet).toEqual(false);
 
+                    const errorCode = errorcodes.SERVER_ERROR_ACCOUNTS_FETCH_FAILURE;
+
+                    const errorMessage = errormessages.SERVER_ERROR_ACCOUNTS_FETCH_FAILURE;
+
+                    expect(res.body).toEqual({
+                        http_status_code: 400,
+                        error: errorCode,
+                        error_message: errorMessage
+                    });
+
                     done();
                 });
         } else {
@@ -167,6 +233,16 @@ describe('Test account transactions', () => {
 
                     expect(xAuthSet).toEqual(false);
 
+                    const errorCode = errorcodes.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE;
+
+                    const errorMessage = errormessages.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE;
+
+                    expect(res.body).toEqual({
+                        http_status_code: 400,
+                        error: errorCode,
+                        error_message: errorMessage
+                    });
+
                     done();
                 });
         } else {
@@ -193,6 +269,16 @@ describe('Test account transactions', () => {
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
                     expect(xAuthSet).toEqual(false);
+
+                    const errorCode = errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE;
+
+                    const errorMessage = errormessages.SERVER_ERROR_TOKEN_REFRESH_FAILURE;
+
+                    expect(res.body).toEqual({
+                        http_status_code: 502,
+                        error: errorCode,
+                        error_message: errorMessage
+                    });
 
                     done();
                 });
@@ -239,6 +325,12 @@ describe('Test account transactions', () => {
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
                     expect(xAuthSet).toEqual(true);
+
+                    const results = res.body.Transactions;
+
+                    const apiResponse = require(__dirname + '/json/transactions-response.json');
+
+                    expect(results).toEqual(apiResponse);
 
                     done();
                 });
