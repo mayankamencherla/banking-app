@@ -35,7 +35,7 @@ const users = [{
 
 // Cleaning out the entire DB
 // TODO: Change this to a test db
-const populateUsers = async (done) => {
+const populateUsers = async () => {
     // Remove all user seed and insert new
     await knex('user').del().then(async () => {
 
@@ -63,7 +63,7 @@ const populateUsers = async (done) => {
 var transactions = require('./../json/transactions-db.json');
 
 // Not working like it should
-const populateTransactions = async (done) => {
+const populateTransactions = async () => {
 
     await knex('transactions').del().then(async () => {
 

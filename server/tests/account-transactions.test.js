@@ -17,8 +17,8 @@ const knex                   = require('knex')(require('./../knexfile'));
 
 // run seed before each test case
 before(() => {
-  return new Promise((resolve) => {
-      populateUsers();
+  return new Promise(async (resolve) => {
+      await populateUsers();
       resolve();
   });
 });

@@ -38,8 +38,6 @@ exports.up = function(knex, Promise) {
         // Automatically add an updated_at and created_at field
         t.timestamps(false, true);
 
-        t.foreign('user_id').references('user_id').inTable('user');
-
         t.index('account_id');
 
         t.index('transaction_id');

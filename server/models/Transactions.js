@@ -55,7 +55,9 @@ const fetchByUserId = (userId) => {
     });
 
     // Select based on the token and the decoded id
-    return knex('transactions').where('user_id', userId);
+    return knex('transactions')
+            .where('user_id', userId)
+            .select('transaction_category', 'amount');
 };
 
 /**

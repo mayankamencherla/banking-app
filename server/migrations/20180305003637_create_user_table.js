@@ -13,13 +13,14 @@ exports.up = function(knex, Promise) {
         // We always create an app token on user creation
         t.string('app_token').notNullable();
 
-        // Ideally this field must be udpated for interfacing with Truelayer API
-        t.text('truelayer_access_token', 'longtext').nullable();
+        t.text('truelayer_access_token', 'mediumtext').nullable();
 
         t.string('truelayer_refresh_token').nullable();
 
         // Automatically add an updated_at and created_at field
         t.timestamps(false, true);
+
+        t.index('app_token');
     });
 };
 

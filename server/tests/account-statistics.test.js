@@ -21,9 +21,9 @@ const {users, populateUsers, populateTransactions} = require('@seed/seed');
 
 // Seed the DB
 before(() => {
-  return new Promise((resolve) => {
-      populateUsers();
-      populateTransactions();
+  return new Promise(async (resolve) => {
+      await populateUsers();
+      await populateTransactions();
       resolve();
   });
 });
