@@ -1,5 +1,10 @@
 const {errormessages} = require('./ErrorMessage');
 
+/**
+ * @param  {int} [statusCode]
+ * @param  {string} [errorCode]
+ * @return {Object} [error JSON object]
+ */
 const getErrorJson = (statusCode, errorCode) => {
 
     return {

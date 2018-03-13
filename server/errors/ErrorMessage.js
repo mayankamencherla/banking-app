@@ -1,7 +1,12 @@
 /**
- * This class contains the error codes used throughout the application
+ * This class contains the error messages used throughout the application.
+ * This will the error message sent across to the client during failure cases.
  */
 
+/**
+ * [Contains mapping of error codes to their messages]
+ * @type {Object}
+ */
 const errormessages = {
     // External Server Errors
     SERVER_ERROR_TRUELAYER_CALLBACK_ERROR   : 'There was an error with the callback from Truelayer',

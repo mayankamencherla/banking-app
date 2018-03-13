@@ -8,6 +8,9 @@ module.exports.controller = (app) => {
     /**
      * This route is used to pull out the transactions for the
      * specified user. The user is identified based on the x-auth token
+     * The transactions will be grouped by account_id
+     *
+     * @return {transactions} [user's transactions]
      */
     app.get('/user/transactions', authenticate, async (req, res) => {
 
@@ -40,6 +43,8 @@ module.exports.controller = (app) => {
     /**
      * This route is used to pull out the transactions saved in the DB, and
      * return the min, max and average of amounts grouped by transaction categories.
+     *
+     * @return {statistics} [User transaction stats]
      */
     app.get('/user/statistics', authenticate, async (req, res) => {
 
@@ -67,10 +72,10 @@ module.exports.controller = (app) => {
         // If txn length = 0, then we return a different response
 
         // Look into whether amounts are being tallied up correctly
-        const responseObj = service.getTxnCategoryStats(req, transactions);
+        const statistics = service.getTxnCategoryStats(req, transactions);
 
         // TODO: Don't cache the response in the browser, cache it in the app
         res.setHeader('x-auth', req.token.app_token);
-        res.json({"Statistics": responseObj});
+        res.json({"Statistics": statistics});
     });
 };

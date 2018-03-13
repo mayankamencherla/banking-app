@@ -2,6 +2,10 @@
  * This class contains the tracecodes used throughout the application
  */
 
+/**
+ * [Tracecodes used throughout the app]
+ * @type {Object}
+ */
 const tracecodes = {
     AUTHENTICATION_REQUEST           : 'AUTHENTICATION_REQUEST',
     TRUELAYER_AUTH_URL               : 'TRUELAYER_AUTH_URL',

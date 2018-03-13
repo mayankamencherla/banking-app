@@ -5,6 +5,11 @@ const {encrypt}                      = require('@utils/crypto');
 const jwt                            = require('jsonwebtoken');
 const uuidv1                         = require('uuid/v1');
 
+/**
+ * @param  {string} access_token
+ * @param  {string} refresh_token
+ * @return {Object} app_token
+ */
 const createUser  = (access_token, refresh_token) => {
 
     var access = 'auth'; // we are generating an auth token
@@ -35,6 +40,12 @@ const createUser  = (access_token, refresh_token) => {
             });
 };
 
+/**
+ * @param  {string} id
+ * @param  {string} access_token
+ * @param  {string} refresh_token
+ * @return {Object} app_token, access_token
+ */
 const updateAuthToken = async (id, access_token, refresh_token) => {
 
     // we get the web token based on the id attribute
@@ -67,6 +78,11 @@ const updateAuthToken = async (id, access_token, refresh_token) => {
         });
 };
 
+/**
+ * Finds user by app_token for app authentication
+ * @param  {string} token
+ * @return {user|null} [The found user]
+ */
 const findByToken = (token) => {
 
     logger.info({

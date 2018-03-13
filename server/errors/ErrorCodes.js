@@ -2,6 +2,10 @@
  * This class contains the error codes used throughout the application
  */
 
+/**
+ * [Application internal error codes]
+ * @type {Object}
+ */
 const errorcodes = {
     // External Server Errors
     SERVER_ERROR_TRUELAYER_CALLBACK_ERROR    : 'SERVER_ERROR_TRUELAYER_CALLBACK_ERROR',

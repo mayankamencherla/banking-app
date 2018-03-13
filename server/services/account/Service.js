@@ -103,7 +103,11 @@ const refreshTokenIfExpired = async (req, res, token) => {
 };
 
 /**
+ * Makes a request to Truelayer to get all accounts linked to user.
  *
+ * @see http://docs.truelayer.com/#list-all-accounts
+ *
+ * @return {accountIds} [User's account ids]
  */
 const fetchAllUserAccounts = async (req, res) => {
 
@@ -143,6 +147,8 @@ const fetchAllUserAccounts = async (req, res) => {
  * An async wrapper over Truelayer's getTransactions SDK method
  *
  * @see http://docs.truelayer.com/#retrieve-account-transactions
+ *
+ * @return {transactions} [User transactions]
  */
 const getTransactionsResponse = async (req, res) => {
 
@@ -183,6 +189,10 @@ const getTransactionsResponse = async (req, res) => {
  * This method takes in an array of accountIds,
  * and makes requests to the Truelayer server to fetch
  * each accounts transactions asynchronously.
+ *
+ * @see https://goo.gl/FQthFw
+ *
+ * @return {array} [An array of promises]
  */
 const getMultipleAccountsTransactions = async (req, res) => {
 
@@ -270,6 +280,8 @@ const saveAccountTransactions = (req, transactions, accountId) => {
 
 /**
  * Get the user transactions from redis or the DB
+ *
+ * @return {transactions} [User transactions]
  */
 const getUserTransactions = async (userId) => {
 
@@ -330,9 +342,11 @@ const handleTransactionsEmpty = (req, res) => {
 
 /**
  * Computes the {min, max, ave} values for each transaction category
- * The code is built to suit the API spec of Truelayer's transactions.
+ * The code is built on the API contract of Truelayer's transactions.
  *
  * @see http://docs.truelayer.com/#retrieve-account-transactions
+ *
+ * @return {statistics} [User transaction stats]
  */
 const getTxnCategoryStats = (req, transactions) => {
 

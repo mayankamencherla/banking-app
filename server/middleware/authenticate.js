@@ -1,7 +1,7 @@
-const {User}        = require('@models/User');
-const {logger}      = require('@log/logger');
-const {tracecodes}  = require('@tracecodes');
-const {decrypt}     = require('@utils/crypto');
+const {User}                         = require('@models/User');
+const {logger}                       = require('@log/logger');
+const {tracecodes}                   = require('@tracecodes');
+const {decrypt}                      = require('@utils/crypto');
 const {errorcodes}                   = require('@errorcodes');
 const {getErrorJson}                 = require('@ApiError');
 

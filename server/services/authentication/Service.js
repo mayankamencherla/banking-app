@@ -32,6 +32,8 @@ const scopes = ['info', 'accounts', 'transactions', 'offline_access'];
 
 /**
  * A wrapper over Truelayer's getAuthUrl method in the SDK
+ *
+ * @return {url} [Truelayer auth url]
  */
 const getTruelayerAuthUrl = (req) => {
 
@@ -41,6 +43,7 @@ const getTruelayerAuthUrl = (req) => {
         headers: req.headers
     });
 
+    // Using Truelayer's SDK to generate the auth url
     const authUrl = authClient.getAuthUrl(env.REDIRECT_URI, scopes, "foobar", "", "", process.env.MOCK);
 
     logger.info({
@@ -58,6 +61,8 @@ const getTruelayerAuthUrl = (req) => {
  * which must be used in exchange for Truelayer's access token
  *
  * @see http://docs.truelayer.com/#exchange-code-with-access_token
+ *
+ * @return {tokens|null} [Truelayer's OAuth2.0 tokens]
  */
 const getTruelayerAuthToken = async (req, res) => {
 
@@ -99,6 +104,8 @@ const getTruelayerAuthToken = async (req, res) => {
 /**
  * We create a new authenticated user in our app
  * only after token validations have passed before this step
+ *
+ * @return {user|null} [new authenticated user]
  */
 const createNewAuthenticatedUser = async (req, res, tokens) => {
 
@@ -142,6 +149,8 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
  * This method is used to get the authenticated user information from Truelayer
  *
  * @see http://docs.truelayer.com/#retrieve-identity-information
+ *
+ * @return {info|null} [Authenticated user info]
  */
 const getAuthenticatedUserInfo = async (req, res, tokens) => {
 
@@ -189,6 +198,8 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
  * Access tokens expire every 1 hour, by default.
  *
  * @see http://docs.truelayer.com/#exchange-code-with-access_token
+ *
+ * @return {bool} [Valid / Invalid token]
  */
 const runTokenValidations = (req, res, tokens) => {
 
@@ -207,7 +218,7 @@ const runTokenValidations = (req, res, tokens) => {
 };
 
 /**
- * Helper method used to failures in the callback route
+ * Helper method used to send failure response in the callback route
  */
 const returnCallbackFailure = (req, res, traceCode, httpCode, errorCode) => {
 

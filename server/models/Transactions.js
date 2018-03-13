@@ -47,6 +47,12 @@ const saveTransactions = (transactions, accountId, userId) => {
         });
 };
 
+/**
+ * Fetches user entity by userId
+ *
+ * @param  {userId}
+ * @return {Promise}
+ */
 const fetchByUserId = (userId) => {
 
     logger.info({
@@ -64,6 +70,8 @@ const fetchByUserId = (userId) => {
  * Runs through the entire transactions array, pulls out relevant
  * information and then filters the transactions that have already
  * been saved in the DB so that duplication is avoided.
+ *
+ * @return {array} [Transactions]
  */
 const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
 
