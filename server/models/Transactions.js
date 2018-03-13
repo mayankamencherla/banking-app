@@ -6,7 +6,7 @@ const _                              = require('lodash');
 const redis                          = require('redis');
 
 // Create a redis client
-const client = redis.createClient();
+const client = redis.createClient(6379, 'redis');
 
 /**
  * Transactions is an object containining account_id and

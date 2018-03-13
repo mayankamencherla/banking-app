@@ -5,7 +5,7 @@
 module.exports = {
   client: 'mysql',
   connection: {
-    user: 'user',
+    user: 'root',
     password: 'password',
     database: 'banking_app'
   }

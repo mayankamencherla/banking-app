@@ -1,18 +1,21 @@
 FROM node:9
 
-# Create app directory
+# Set the work directory
 WORKDIR /app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+# Adding to cache
+ADD package.json /app
 
 RUN npm install
 
-# Bundle app source
-COPY . /app
+# Add application files
+ADD . /app
 
+# Entrypoint script
+RUN cp docker-entrypoint.sh /usr/local/bin/ && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Expose the port
 EXPOSE 3000
 
-CMD [ "npm", "start" ]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

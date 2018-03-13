@@ -18,7 +18,8 @@ const redis                          = require("redis");
 const Promise                        = require('bluebird');
 
 // Create a redis client
-const client = Promise.promisifyAll(redis.createClient());
+// TODO: Move this out to redis and not localhost
+const client = Promise.promisifyAll(redis.createClient(6379, 'redis'));
 
 // Cleaning the environment variables, TODO: Move this out to a different file
 const env = envalid.cleanEnv(process.env, {

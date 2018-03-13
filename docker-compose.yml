@@ -1,0 +1,22 @@
+version: "2"
+
+services:
+  mysql:
+    build: ./db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+  redis:
+    image: "redis:alpine"
+
+  banking_app:
+    build: .
+    depends_on:
+      - mysql
+      - redis
+    entrypoint:
+      - /usr/local/bin/docker-entrypoint.sh
+    volumes:
+      - .:/code
+    ports:
+      - "3000:3000"
