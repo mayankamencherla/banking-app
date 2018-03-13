@@ -12,6 +12,7 @@ const {app}                  = require('./../server');
 const {User}                 = require('@models/User');
 const {errorcodes}           = require('@errorcodes');
 const {errormessages}        = require('@errormessages');
+const {Transactions}         = require('@models/Transactions');
 
 // Create a redis client
 const client = Promise.promisifyAll(redis.createClient());
@@ -103,6 +104,56 @@ describe('Test account transaction statistics route', () => {
                                         .where('user_id', users[1].id);
 
                 expect(transactions.length).toEqual(0);
+
+                done();
+            });
+    });
+
+    it('should generate statistics after fetching transactions from db', (done) => {
+
+        const transactions = require('./json/transactions-user1.json');
+
+        const response = require(__dirname + '/json/statistics.json');
+
+        const accountId = 'd1c5057c1dfc149061455dae56a7a535';
+
+        //
+        // User1 doesn't have any transactions stored in redis,
+        // so I'm inserting transactions into the DB, which will
+        // get pulled out later while generating transactions stat
+        //
+        Transactions
+            .saveTransactions(transactions.results, accountId, users[1].id)
+            .then((savedRows) => {
+                expect(savedRows.length === 0).toEqual(false);
+            })
+            .catch((e) => {
+                // We expect that this should fail
+                expect(2).toEqual(3);
+            });
+
+        // We flush the redis cache
+        client.flushdb((err, succeeded) => {
+            console.log(succeeded);
+        });
+
+        request(app)
+            .get('/user/statistics')
+            .set('x-auth', users[1].app_token)
+            .end((err, res) => {
+
+                expect(res.statusCode).toEqual(200);
+
+                const results = res.body.Statistics;
+
+                expect(results).toEqual(response);
+
+                const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                expect(xAuthSet).toEqual(true);
+
+                // Authenticated token has not expired and will be sent back in the response
+                expect(res.header['x-auth']).toEqual(users[1].app_token);
 
                 done();
             });

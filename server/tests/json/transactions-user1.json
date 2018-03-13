@@ -1,0 +1,82 @@
+{
+  "results": [
+    {
+      "transaction_id": "32423423423423423434234",
+      "timestamp": "2017-02-01T00:00:00+00:00",
+      "description": "INTEREST (GROSS)",
+      "transaction_type": "CREDIT",
+      "transaction_category": "INTEREST",
+      "amount": 0.77,
+      "currency": "GBP",
+      "meta": {
+        "bank_transaction_id": "039ccc24c3",
+        "provider_transaction_category": "INTEREST_GROSS"
+      }
+    },
+    {
+      "transaction_id": "23423423423543545435",
+      "timestamp": "2017-02-01T00:00:00+00:00",
+      "description": "O/D USAGE FEE",
+      "transaction_type": "DEBIT",
+      "transaction_category": "FEE_CHARGE",
+      "amount": -6,
+      "currency": "GBP",
+      "meta": {
+        "bank_transaction_id": "c9bc0942f0",
+        "provider_transaction_category": "FEE"
+      }
+    },
+    {
+      "transaction_id": "rg345qc2342424234324",
+      "timestamp": "2017-01-30T00:00:00+00:00",
+      "description": "THAMES WATER",
+      "transaction_type": "DEBIT",
+      "transaction_category": "DIRECT_DEBIT",
+      "amount": -33.93,
+      "currency": "GBP",
+      "meta": {
+        "bank_transaction_id": "33b5555724",
+        "provider_transaction_category": "DIRECT_DEBIT"
+      }
+    },
+    {
+      "transaction_id": "45qc5245cq45cqc45qc454",
+      "timestamp": "2017-01-19T00:00:00+00:00",
+      "description": "L B I COUNCIL TAX",
+      "transaction_type": "DEBIT",
+      "transaction_category": "DIRECT_DEBIT",
+      "amount": -148,
+      "currency": "GBP",
+      "meta": {
+        "bank_transaction_id": "23473ff316",
+        "provider_transaction_category": "DIRECT_DEBIT"
+      }
+    },
+    {
+      "transaction_id": "qc45q43c5q45cq4c5q4c54qc",
+      "timestamp": "2017-01-16T00:00:00+00:00",
+      "description": "TV LICENCE MBP",
+      "transaction_type": "DEBIT",
+      "transaction_category": "DIRECT_DEBIT",
+      "amount": -24.25,
+      "currency": "GBP",
+      "meta": {
+        "bank_transaction_id": "08a7debb12",
+        "provider_transaction_category": "DIRECT_DEBIT"
+      }
+    },
+    {
+      "transaction_id": "qc45q34c5q43c5q435cq45",
+      "timestamp": "2017-01-03T00:00:00+00:00",
+      "description": "ACME LIMITED",
+      "transaction_type": "CREDIT",
+      "transaction_category": "CREDIT",
+      "amount": 12345.67,
+      "currency": "GBP",
+      "meta": {
+        "bank_transaction_id": "da188a719c",
+        "provider_transaction_category": "FASTER_PAYMENTS_INCOMING"
+      }
+    }
+  ]
+}

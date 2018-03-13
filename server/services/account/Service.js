@@ -291,7 +291,7 @@ const getUserTransactions = async (userId) => {
         }
 
         // TODO: Should this be await?
-        var transactions = await Transactions.fetchByUserId(userId)
+        var transactions = await Transactions.fetchByUserId(userId);
 
         logger.info({
             code: tracecodes.FETCHED_TRANSACTIONS_FROM_DB,
