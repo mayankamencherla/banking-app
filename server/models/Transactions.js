@@ -1,12 +1,28 @@
+require('dotenv').config();
+
 const knex                           = require('knex')(require('./../knexfile'));
 const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
 
 const _                              = require('lodash');
 const redis                          = require('redis');
+const envalid                        = require('envalid');
+const Promise                        = require('bluebird');
+
+const env = envalid.cleanEnv(process.env, {
+    NODE_ENV      : envalid.str(),
+});
+
+let client;
 
 // Create a redis client
-const client = redis.createClient(6379, 'redis');
+if (process.env.NODE_ENV === 'production') {
+    client = Promise.promisifyAll(redis.createClient(6379, 'redis'));
+} else {
+    client = Promise.promisifyAll(redis.createClient(6379, '127.0.0.1'));
+}
+
+
 
 /**
  * Transactions is an object containining account_id and

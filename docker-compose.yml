@@ -16,6 +16,8 @@ services:
       - redis
     entrypoint:
       - /usr/local/bin/docker-entrypoint.sh
+    environment:
+      NODE_ENV: production
     volumes:
       - .:/code
     ports:

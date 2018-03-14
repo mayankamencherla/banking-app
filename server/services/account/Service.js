@@ -2,6 +2,8 @@
  * This file contains helper methods for account controller
  */
 
+require('dotenv').config();
+
  // In-house files
 const {User}                         = require('@models/User');
 const {Transactions}                 = require('@models/Transactions');
@@ -17,17 +19,23 @@ const {AuthAPIClient, DataAPIClient} = require('truelayer-client');
 const redis                          = require("redis");
 const Promise                        = require('bluebird');
 
-// Create a redis client
-// TODO: Move this out to redis and not localhost
-const client = Promise.promisifyAll(redis.createClient(6379, 'redis'));
-
 // Cleaning the environment variables, TODO: Move this out to a different file
 const env = envalid.cleanEnv(process.env, {
     CLIENT_ID     : envalid.str(),
     CLIENT_SECRET : envalid.str(),
     MOCK          : envalid.bool(),
+    NODE_ENV      : envalid.str(),
     REDIRECT_URI  : envalid.url({default: "http://localhost:3000/callback"})
 });
+
+let client;
+
+// Create a redis client
+if (process.env.NODE_ENV === 'production') {
+    client = Promise.promisifyAll(redis.createClient(6379, 'redis'));
+} else {
+    client = Promise.promisifyAll(redis.createClient(6379, '127.0.0.1'));
+}
 
 // picks up env variables automatically
 const authClient = new AuthAPIClient();
