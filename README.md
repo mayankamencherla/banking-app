@@ -73,6 +73,12 @@ $ npm test
     g. Run npm test to see all the tests executing
 ```
 
+## Run using Docker
+1. Sign up for **[Docker](https://hub.docker.com/)**
+```bash
+$ sudo docker run -e NODE_ENV=production --rm -p 3000:3000 mayankamencherla/banking_app
+```
+
 ## Logging
 Logging is set up already in the app using **[winston](https://www.github.com/winstonjs/winston)**
 The application's logger will log to `storage/logs/debug.log` as a json
@@ -107,8 +113,17 @@ Some key environment variables are listed and explained below:
 ## API's available on this app
 > This app supports 3 API's currently
 
-1. `GET /` allows you to sign up on the app using Truelayer's oAuth2.0 authentication / authorization flow.
+1. `GET /`
+    - allows you to sign up on the app using Truelayer's oAuth2.0 authentication / authorization flow.
+    - Returns an app auth token as a header (`x-auth`)
 
-2. `GET user/transactions` allows you to fetch signed up user's transactions using app token generated in the step above.
+2. `GET user/transactions`
+    - allows you to fetch signed up user's transactions using app token generated in the step above.
+    - Valid app token must be used to authenticate user
+    - Programmatically check the `x-auth` header in the response to ensure new token is saved when generated. New token token generation happens when Truelayer access token is expired.
 
-3. `GET user/statistics` allows you to generate statistics based on the transactions saved in the API above.
+3. `GET user/statistics`
+    - allows you to generate statistics based on the transactions saved in the API above.
+    - Valid app token must be used to authenticate user
+    - Programmatically check the `x-auth` header in the response to ensure new token is saved when generated. New token token generation happens when Truelayer access token is expired.
+    - API must be called after user/transactions API has been called at least once, as this API simply pulls the information out from the DB / Redis

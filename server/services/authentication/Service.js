@@ -110,9 +110,8 @@ const getTruelayerAuthToken = async (req, res) => {
 const createNewAuthenticatedUser = async (req, res, tokens) => {
 
     // We create the user and add it into the DB
-    // TODO: No callback here, we must use this differently
-    return User.createUser(tokens.access_token, tokens.refresh_token)
-        .then((token) => {
+    try {
+        const token = await User.createUser(tokens.access_token, tokens.refresh_token);
 
         logger.info({
             code: tracecodes.APP_AUTH_TOKEN_GENERATED,
@@ -129,7 +128,9 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
             res.setHeader('x-auth', token.app_token);
         }
 
-    }).catch((e) => {
+        return;
+
+    } catch (e) {
 
         logger.error({
             code: tracecodes.APP_AUTH_TOKEN_GENERATION_FAILED,
@@ -142,7 +143,7 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
                 getErrorJson(500, errorcodes.API_ERROR_USER_GENERATION_FAILED)
             );
         }
-    });
+    }
 };
 
 /**
