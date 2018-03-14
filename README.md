@@ -1,4 +1,8 @@
 # My Banking App
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- [![Packagist](https://img.shields.io/packagist/v/symfony/symfony.svg)]() -->
+
 > This app is a backend that manages your user's financial data using Truelayer's
 secure banking API's over HTTP.
 
@@ -51,7 +55,7 @@ $ npm start
 
 11. Head over to localhost:3000 on your browser to use the app
 
-12. To test out the /user/transactions and /user/statistics routes, the recommended tool would be **[Postman]**(https://www.getpostman.com/apps)
+12. To test out the /user/transactions and /user/statistics routes, the recommended tool would be **[Postman](https://www.getpostman.com/apps)**
 
 ## Run tests
 1. To run tests the following command would work:
