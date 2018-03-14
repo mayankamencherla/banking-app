@@ -34,24 +34,24 @@ mysql> DROP DATABASE banking_app;
 mysql> CREATE DATABASE banking_app;
 ```
 
-8. To get your local mysql to bind to the app, you must first copy over the sample knexfile
+8. To get your local mysql to bind to the app, you must first copy over the sample knexfile. The app has root@password as the default configuration, which must be changed in development to suit the credentials on your local MySQL instance. You can change this in the **[knexfile-sample.js](http://knexjs.org/#knexfile)** file before executing the command below:
 ```bash
 $ cd server && cp knexfile-sample.js knexfile.js && cd ..
 ```
 
-9. The next step is to enter your mysql credentials in the knexfile. The sample file already contains some example code. More details can be found **[here](http://knexjs.org/#knexfile)**
-
-10. The final step in setting up the DB is to run migrations. Please use the following command from the app's root directory:
+9. The final step in setting up the DB is to run migrations. Please use the following command from the app's root directory:
 ```bash
 $ cd server && knex:migrate latest && cd ..
 ```
 
-11. Run the app on localhost by typing the following command:
+10. Run the app on localhost by typing the following command:
 ```bash
 $ npm start
 ```
 
-12. Head over to localhost:3000 on your browser to use the app
+11. Head over to localhost:3000 on your browser to use the app
+
+12. To test out the /user/transactions and /user/statistics routes, the recommended tool would be **[Postman]**(https://www.getpostman.com/apps)
 
 ## Run tests
 1. To run tests the following command would work:
