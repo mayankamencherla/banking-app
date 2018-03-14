@@ -13,6 +13,7 @@ const {User}                 = require('@models/User');
 const {errorcodes}           = require('@errorcodes');
 const {errormessages}        = require('@errormessages');
 const {Transactions}         = require('@models/Transactions');
+const service                = require('@services/account/Service');
 
 // Create a redis client
 const client = Promise.promisifyAll(redis.createClient());
@@ -157,6 +158,73 @@ describe('Test account transaction statistics route', () => {
 
                 done();
             });
+    });
+
+    it('should return account transaction statistics', (done) => {
+
+        const transactions = require('./json/transactions-user1.json');
+
+        const response = require(__dirname + '/json/statistics.json');
+
+        const req = {
+            originalUrl: 'https://random.com',
+            user_id: 'mayankamencherla',
+            token: {
+                app_token: 'randomToken'
+            }
+        };
+
+        const stats = service.getTxnCategoryStats(req, transactions.results);
+
+        expect(stats).toEqual(response);
+
+        done();
+    });
+
+    it('should return return empty response for 0 transactions', (done) => {
+
+        const req = {
+            originalUrl: 'https://random.com',
+            user_id: 'mayankamencherla',
+            token: {
+                app_token: 'randomToken'
+            }
+        };
+
+        const stats = service.getTxnCategoryStats(req, []);
+
+        expect(stats).toEqual([]);
+
+        done();
+    });
+
+    it('should get stats with 1 transaction as input', (done) => {
+
+        const transactions = require('./json/transactions-user1.json');
+
+        const response = [
+            {
+                "INTEREST": {
+                    "min": 0.77,
+                    "max": 0.77,
+                    "average": 0.77
+                }
+            }
+        ];
+
+        const req = {
+            originalUrl: 'https://random.com',
+            user_id: 'mayankamencherla',
+            token: {
+                app_token: 'randomToken'
+            }
+        };
+
+        const stats = service.getTxnCategoryStats(req, [transactions.results[0]]);
+
+        expect(stats).toEqual(response);
+
+        done();
     });
 
 });
