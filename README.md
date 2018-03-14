@@ -6,6 +6,14 @@
 > This app is a backend that manages your user's financial data using Truelayer's
 secure banking API's over HTTP.
 
+## Pre-requisities:
+> Some key things to set up / understand to use this app:
+
+- **[NodeJS](https://nodejs.org/en/)**
+- **[npm](https://www.npmjs.com/)**
+- **[Truelayer](https://console.truelayer.com/?auto=signup)**
+- **[Docker](https://hub.docker.com/)**
+
 ## Downloading
 ```bash
 $ git clone https://github.com/mayankamencherla/truelayer-interview-app.git
@@ -38,7 +46,7 @@ mysql> DROP DATABASE banking_app;
 mysql> CREATE DATABASE banking_app;
 ```
 
-8. To get your local mysql to bind to the app, you must first copy over the sample knexfile. The app has root@password as the default configuration, which must be changed in development to suit the credentials on your local MySQL instance. You can change this in the **[knexfile-sample.js](http://knexjs.org/#knexfile)** file before executing the command below:
+8. To get your local mysql to bind to the app, you must first copy over the sample knexfile. The app has `root@password` as the default configuration, which must be changed in development to suit the credentials on your local MySQL instance. You can change this in the **[knexfile-sample.js](http://knexjs.org/#knexfile)** file before executing the command below:
 ```bash
 $ cd server && cp knexfile-sample.js knexfile.js && cd ..
 ```
@@ -57,6 +65,11 @@ $ npm start
 
 12. To test out the /user/transactions and /user/statistics routes, the recommended tool would be **[Postman](https://www.getpostman.com/apps)**
 
+13. After setting up the app locally, you could alternatively run the app via Docker. Please use the command below to do that:
+```bash
+$ sudo docker-compose up
+```
+
 ## Run tests
 1. To run tests the following command would work:
 ```bash
@@ -73,10 +86,20 @@ $ npm test
     g. Run npm test to see all the tests executing
 ```
 
-## Run using Docker
-1. Sign up for **[Docker](https://hub.docker.com/)**
+## Run using **[Docker](https://hub.docker.com/)**
+> The following commands will help you use the app in no time.
+
+1. Set up the MySQL container
 ```bash
-$ sudo docker run -e NODE_ENV=production --rm -p 3000:3000 mayankamencherla/banking_app
+$ sudo docker run -e MYSQL_DATABASE=banking_app MYSQL_ROOT_PASSWORD=password -d --name mysql mayankamencherla/bankingapp_mysql
+```
+2. Set up the Redis container
+```bash
+$ sudo docker run -d --name redis redis
+```
+3. Set up the app container and link it to the MySQL and Redis containers
+```bash
+$ sudo docker run -e NODE_ENV=production --link mysql:mysql --link redis:redis --rm -p 3000:3000 mayankamencherla/banking_app
 ```
 
 ## Logging
