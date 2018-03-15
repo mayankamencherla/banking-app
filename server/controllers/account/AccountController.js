@@ -61,12 +61,9 @@ module.exports.controller = (app) => {
             return;
         }
 
-        // If txn length = 0, then we return a different response
-
-        // Look into whether amounts are being tallied up correctly
         const statistics = service.getTxnCategoryStats(req, transactions);
 
-        // TODO: Don't cache the response in the browser, cache it in the app
+        // Send response along with app_token
         res.setHeader('x-auth', req.token.app_token);
         res.json({"Statistics": statistics});
     });

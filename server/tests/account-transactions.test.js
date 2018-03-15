@@ -415,7 +415,13 @@ describe('Test account transactions', () => {
 
         var initialLength = transactions.length;
 
-        service.saveAccountTransactions({}, txns, accountId);
+        req = {
+            token: {
+                app_token: 'Random token'
+            }
+        };
+
+        service.saveAccountTransactions(req, txns, accountId);
 
         transactions = await knex('transactions').select();
 

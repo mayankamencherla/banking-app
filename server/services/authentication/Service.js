@@ -233,8 +233,6 @@ const returnCallbackFailure = (req, res, traceCode, httpCode, errorCode) => {
     // If a response is already sent to the user, we don't resend the response
     if (res.headersSent === false) {
 
-        // TODO: This needs to change
-        // TODO: Try mapping this to an error object based on error code
         res.status(httpCode).json(getErrorJson(httpCode, errorCode));
     }
 };
