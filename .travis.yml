@@ -1,0 +1,19 @@
+language: node_js
+node_js: node
+before_install:
+  - npm i -g npm
+  - mysql -e 'CREATE DATABASE banking_app;'
+cache:
+  directories:
+    - node_modules
+services:
+  - mysql
+  - redis-server
+before_script:
+  - npm install
+  - cp .env.sample .env
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('password') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+  - cp server/knexfile-sample.js server/knexfile.js
+  - npm run migrate
+script:
+  - npm test
