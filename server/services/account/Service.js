@@ -307,16 +307,12 @@ const getUserTransactions = async (userId) => {
             return JSON.parse(transactions);
         }
 
-        // TODO: Should this be await?
         var transactions = await Transactions.fetchByUserId(userId);
 
         logger.info({
             code: tracecodes.FETCHED_TRANSACTIONS_FROM_DB,
             transactions: transactions
         });
-
-        // What if no transactions exist in user id
-        // TODO: Test this case thoroughly
 
         return transactions;
 
@@ -358,30 +354,34 @@ const getTxnCategoryStats = (req, transactions) => {
     // All the amounts are in GBP
     const groupedTransactions = _.groupBy(transactions, tran => tran.transaction_category);
 
+    // We are transforming the grouped transactions above
     var responseObj = _.transform(groupedTransactions, (result, value, key) => {
 
-        // TODO: Is there a cleaner way to do this?
+        // We compute stats for each transaction category
         var getMinMaxAve = (value) => {
-            var min = Number.MAX_VALUE, max = 0, average = 0, total = 0;
 
-            for (var i=0; i<value.length; i++) {
-                var amount = Math.abs(value[i].amount);
+            var minMaxTotal = value.reduce((acc, val) => {
 
-                total += amount;
+                var amount = Math.abs(val.amount);
 
-                if (amount < min) {
-                    min = amount;
-                }
+                // Minimum
+                acc[0] = (amount < acc[0]) ? amount : acc[0];
 
-                if (amount > max) {
-                    max = amount;
-                }
-            }
+                // Maximum
+                acc[1] = (amount > acc[1]) ? amount : acc[1];
+
+                // Total
+                acc[2] += amount;
+
+                return acc;
+            },
+            // Min, Max, Total
+            [Number.MAX_VALUE, 0, 0]);
 
             return {
-                min: min,
-                max: max,
-                average: total / value.length,
+                min: minMaxTotal[0],
+                max: minMaxTotal[1],
+                average: minMaxTotal[2] / value.length,
             };
         };
 

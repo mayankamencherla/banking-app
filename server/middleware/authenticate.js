@@ -39,7 +39,6 @@ const authenticate = (req, res, next) => {
     User.findByToken(token).then((user) => {
 
         if (!user){
-            // TODO: What if old token is sent? How do we handle the flow?
             return Promise.reject();
         }
 
