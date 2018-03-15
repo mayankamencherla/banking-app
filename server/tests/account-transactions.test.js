@@ -332,7 +332,19 @@ describe('Test account transactions', () => {
         // This will cause a failure while saving user
         req = {};
 
-        res = {};
+        res = {
+            headersSent: false,
+            statusCode: 200,
+            status: function (statusCode) {
+                this.statusCode = statusCode;
+
+                return this;
+            },
+            json: function (body) {
+                // Dummy function
+                return;
+            }
+        };
 
         token = {
             access_token: "random token",
@@ -349,6 +361,66 @@ describe('Test account transactions', () => {
 
         // New user was not created
         expect(users.length).toEqual(2);
+    });
+
+    it('should not fetch user accounts with expired token', () => {
+
+        // Invalid access token will fail validation
+        req.token = {
+            access_token: "random token",
+            refresh_token: "refresh token",
+        };
+
+        service.fetchAllUserAccounts(req, {})
+            .then((accounts) => {
+                expect(typeof accounts).toEqual('undefined');
+
+                Promise.resolve();
+            });
+    });
+
+    it('should not fetch transactions with res already sent', () => {
+
+        // Headers already sent will result in an early return
+        res = {headersSent: true};
+
+        service.getTransactionsResponse({}, res)
+            .then((transactions) => {
+                expect(typeof transactions).toEqual('undefined');
+
+                Promise.resolve();
+            });
+    });
+
+    it('should not save account transactions', async () => {
+
+        // Attempting to insert a new transaction
+        const txns = [
+            {
+              "user_id": "2374673843",
+              "account_id": "f1234560abf9f57287637624def390871",
+              "transaction_id": "792384792384798",
+              "timestamp": "2017-02-01T00:00:00+00:00",
+              "description": "INTEREST (GROSS)",
+              "transaction_type": "CREDIT",
+              "transaction_category": "INTEREST",
+              "amount": 0.77,
+              "currency": "GBP"
+            }
+        ];
+
+        var accountId = 'f1234560abf9f57287637624def390871';
+
+        var transactions = await knex('transactions').select();
+
+        var initialLength = transactions.length;
+
+        service.saveAccountTransactions({}, txns, accountId);
+
+        transactions = await knex('transactions').select();
+
+        // Transactions were not saved into the DB
+        expect(transactions.length).toEqual(initialLength);
     });
 
     it('should renew token and return transactions', (done) => {

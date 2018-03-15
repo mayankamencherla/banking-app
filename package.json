@@ -7,7 +7,7 @@
     "start": "node server/server.js",
     "migrate": "cd server && knex migrate:latest && cd ..",
     "start-docker": "nodemon server/server.js",
-    "test": "nyc --reporter=html --reporter=text --cache mocha server/**/*.test.js --exit"
+    "test": "rm -rf server/storage && nyc --reporter=html --reporter=text --cache mocha server/**/*.test.js --exit"
   },
   "author": "mayankamencherla",
   "license": "MIT",
