@@ -364,16 +364,11 @@ const getTxnCategoryStats = (req, transactions) => {
 
                 var amount = Math.abs(val.amount);
 
-                // Minimum
-                acc[0] = (amount < acc[0]) ? amount : acc[0];
-
-                // Maximum
-                acc[1] = (amount > acc[1]) ? amount : acc[1];
-
-                // Total
-                acc[2] += amount;
-
-                return acc;
+                return [
+                    Math.min(amount, acc[0]),
+                    Math.max(amount, acc[1]),
+                    amount + acc[2]
+                ];
             },
             // Min, Max, Total
             [Number.MAX_VALUE, 0, 0]);
