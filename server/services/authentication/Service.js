@@ -134,7 +134,6 @@ const createNewAuthenticatedUser = async (req, res, tokens) => {
 
         logger.error({
             code: tracecodes.APP_AUTH_TOKEN_GENERATION_FAILED,
-            error: e
         });
 
         if (res.headersSent === false) {
@@ -189,7 +188,7 @@ const getAuthenticatedUserInfo = async (req, res, tokens) => {
         // the Truelayer service is up and running
         //
         returnCallbackFailure(req, res,
-            tracecodes.ERROR_FETCHING_CUSTOMER_INFO, 401,
+            tracecodes.ERROR_FETCHING_CUSTOMER_INFO, 500,
             errorcodes.SERVER_ERROR_CUSTOMER_INFO_FETCH_FAILED);
     }
 };

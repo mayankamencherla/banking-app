@@ -184,7 +184,7 @@ describe('Authentication + Authorization via Truelayer', () => {
                 .get('/callback?code=2')
                 .end((err, res) => {
 
-                    expect(res.statusCode).toEqual(401);
+                    expect(res.statusCode).toEqual(500);
 
                     const xAuthSet = res.header.hasOwnProperty('x-auth');
 
@@ -199,7 +199,7 @@ describe('Authentication + Authorization via Truelayer', () => {
                     const errorMessage = errormessages.SERVER_ERROR_CUSTOMER_INFO_FETCH_FAILED;
 
                     expect(res.body).toEqual({
-                        http_status_code: 401,
+                        http_status_code: 500,
                         error: errorCode,
                         error_message: errorMessage
                     });

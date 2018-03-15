@@ -173,6 +173,40 @@ describe('Test account transactions', () => {
         }
     });
 
+    it('should return transactions when 0 accounts present for user', (done) => {
+
+        // We want to run this test case only with a valid token in the env
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            const response = require(__dirname + '/json/transactions.json');
+
+            nock('https://api.truelayer.com')
+                .get('/data/v1/accounts')
+                .reply(200, {results: []})
+
+            request(app)
+                .get('/user/transactions')
+                .set('x-auth', users[0].app_token)
+                .end(async (err, res) => {
+
+                    expect(res.statusCode).toEqual(200);
+
+                    const results = res.body.Transactions;
+
+                    expect(results).toEqual([]);
+
+                    const xAuthSet = res.header.hasOwnProperty('x-auth');
+
+                    // We still set the x-auth token in this case
+                    expect(xAuthSet).toEqual(true);
+
+                    done();
+                });
+        } else {
+            done();
+        }
+    });
+
     it('should pass authentication and fail account fetch', (done) => {
 
         // We want to run this test case only with a valid token in the env

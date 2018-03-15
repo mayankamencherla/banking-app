@@ -39,7 +39,7 @@ describe('Test account transaction statistics route', () => {
         // as an exception will be caught
         //
         request(app)
-            .get('/user/statistics')
+            .get('/user/transactions/stats')
             .expect(401)
             .end(done);
     });
@@ -51,7 +51,7 @@ describe('Test account transaction statistics route', () => {
         const response = require(__dirname + '/json/statistics.json');
 
         request(app)
-            .get('/user/statistics')
+            .get('/user/transactions/stats')
             .set('x-auth', users[0].app_token)
             .end(async (err, res) => {
 
@@ -80,7 +80,7 @@ describe('Test account transaction statistics route', () => {
     it('should pass authentication and return 400 as user has no transactions', (done) => {
 
         request(app)
-            .get('/user/statistics')
+            .get('/user/transactions/stats')
             .set('x-auth', users[1].app_token)
             .end(async (err, res) => {
 
@@ -139,7 +139,7 @@ describe('Test account transaction statistics route', () => {
         });
 
         request(app)
-            .get('/user/statistics')
+            .get('/user/transactions/stats')
             .set('x-auth', users[1].app_token)
             .end((err, res) => {
 

@@ -1,5 +1,6 @@
 # My Banking App
 
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- [![Packagist](https://img.shields.io/packagist/v/symfony/symfony.svg)]() -->
 
@@ -131,7 +132,7 @@ Some key environment variables are listed and explained below:
 2. When the app token is sent across to the API's, during the authentication step, we decrypt the encrypted Truelayer tokens using the AES-256-CTR algorithm again before sending it to Truelayer for further processing
 
 3. There is currently a security breach in the methodology used above. This is outlined below:
-> Note: CTR mode requires that every encryption / decryption must happen with a unique secure IV, that must be generated specifically for that flow. Currently, this is not the case, as we are re-using the same IV based on the environment variable. The right way to do things would be to generate a new IV for every new token, or re-use of valid token, and use it to encrypt the Truelayer tokens, or re-encrypt the re-used Truelayer tokens. After this, the IV must be encrypted using a public key encryption mode like RSA, and stored in the DB along with the newly encrypted tokens. During authentication, the IV must be decrypted using RSA, and then be used to decrypt the tokens before sending it to Truelayer's APIs.
+> Note: CTR mode requires that every encryption / decryption must happen with a unique secure IV, that must be generated specifically for that flow. Currently, this is not the case, as we are re-using the same IV based on the environment variable. Ideally, every time an IV has been used for encryption and decryption together, a new secure IV must be generated, and used for encryption of the access token. After this, the IV must be encrypted using a public key encryption mode like RSA, and stored in the DB along with the newly encrypted tokens. During authentication, the IV must be decrypted using RSA along with the private key , and then be used to decrypt the tokens before sending it to Truelayer's APIs.
 
 ## API's available on this app
 > This app supports 3 API's currently

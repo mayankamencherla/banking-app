@@ -30,13 +30,6 @@ module.exports.controller = (app) => {
 
         const transactions = await service.getTransactionsResponse(req, res);
 
-        // If we weren't able to fetch transactions, we return early
-        // TODO: Send all responses here
-        if (typeof transactions === 'undefined') {
-
-            return;
-        }
-
         res.json({"Transactions": transactions});
     });
 
@@ -46,7 +39,7 @@ module.exports.controller = (app) => {
      *
      * @return {statistics} [User transaction stats]
      */
-    app.get('/user/statistics', authenticate, async (req, res) => {
+    app.get('/user/transactions/stats', authenticate, async (req, res) => {
 
         logger.info({
             code: tracecodes.CUSTOMER_ACCOUNT_STATS_REQUEST,
@@ -58,7 +51,6 @@ module.exports.controller = (app) => {
         // and if redis is empty, we fetch the data from the DB
         const transactions = await service.getUserTransactions(req.user_id);
 
-        // TODO: Await must be in a try catch block
         if ((typeof transactions === 'undefined') ||
             ((typeof transactions !== 'undefined') &&
              (transactions.length === 0))) {

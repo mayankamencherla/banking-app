@@ -19,7 +19,7 @@ const {AuthAPIClient, DataAPIClient} = require('truelayer-client');
 const redis                          = require("redis");
 const Promise                        = require('bluebird');
 
-// Cleaning the environment variables, TODO: Move this out to a different file
+// Cleaning the environment variables,
 const env = envalid.cleanEnv(process.env, {
     CLIENT_ID     : envalid.str(),
     CLIENT_SECRET : envalid.str(),
@@ -71,13 +71,13 @@ const refreshTokenIfExpired = async (req, res, token) => {
             logger.error({
                 code: tracecodes.ACCESS_TOKEN_RENEWAL_FAILURE,
                 url: req.originalUrl,
-                error: e
             });
 
-            // TODO: Is this the right way to do things?
             res.status(502).json(
                 getErrorJson(502, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
             );
+
+            return;
         };
 
         try {
@@ -260,7 +260,6 @@ const getMultipleAccountsTransactions = async (req, res) => {
  */
 const saveAccountTransactions = (req, transactions, accountId) => {
 
-    // TODO: try catch
     Transactions.saveTransactions(transactions, accountId, req.user_id)
         .then((savedTransactions) => {
 
@@ -281,9 +280,6 @@ const saveAccountTransactions = (req, transactions, accountId) => {
                 app_token: req.token.app_token,
                 account_id: accountId
             });
-
-            // TODO: Saving one account's txns shouldn't halt the API???
-            // Figure out a clean way to handle this case
         });
 };
 
