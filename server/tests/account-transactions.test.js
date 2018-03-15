@@ -326,6 +326,31 @@ describe('Test account transactions', () => {
 
     });
 
+    it('should not create a new user', async () => {
+
+        // Not setting user_id in the req
+        // This will cause a failure while saving user
+        req = {};
+
+        res = {};
+
+        token = {
+            access_token: "random token",
+            refresh_token: "refresh token",
+        };
+
+        nock('https://auth.truelayer.com')
+            .post('/connect/token')
+            .reply(200, token);
+
+        await service.refreshTokenIfExpired(req, res, token);
+
+        const users = await knex('user').select();
+
+        // New user was not created
+        expect(users.length).toEqual(2);
+    });
+
     it('should renew token and return transactions', (done) => {
 
         // We want to run this test case only with a valid token in the env

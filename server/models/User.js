@@ -51,7 +51,6 @@ const updateAuthToken = async (id, access_token, refresh_token) => {
     // we get the web token based on the id attribute
     var objectToTokenify = {id: id, access: 'auth'};
 
-    // TODO: Will this change each time??
     var token = jwt.sign(objectToTokenify, process.env.JWT_SECRET).toString();
 
     logger.info({
