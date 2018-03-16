@@ -90,7 +90,9 @@ const refreshTokenIfExpired = async (req, res, token) => {
                 app_token: generatedToken.app_token,
             });
 
-            return generatedToken;
+            req.token = generatedToken;
+
+            return;
         } catch (e) {
 
             logger.error({
@@ -107,8 +109,6 @@ const refreshTokenIfExpired = async (req, res, token) => {
             }
         }
     }
-
-    return token;
 };
 
 /**

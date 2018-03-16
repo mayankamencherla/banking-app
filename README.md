@@ -22,7 +22,8 @@ $ git clone https://github.com/mayankamencherla/truelayer-interview-app.git
 ```
 
 ## Setup Locally
-> To get the app working locally, or to run test cases, follow the instructions below:
+> To get the app working locally, or to run test cases, follow the instructions below.
+> After setting up the app, details on each API and how to use it can be found below in the **[API's available on this app](https://github.com/mayankamencherla/truelayer-interview-app#apis-available-on-this-app)** section.
 
 1. Navigate to the app's folder
 
@@ -36,7 +37,7 @@ $ npm install
 $ cp .env.sample .env
 ```
 
-4. Change the values of the environment variables in .env file based on requirement. Please **[sign-up](https://console.truelayer.com/?auto=signup)** for Truelayer and input your clientId and secret in this file. These variables are required for the app to run.
+4. Change the values of the environment variables in .env file based on requirement. Please **[sign-up](https://console.truelayer.com/?auto=signup)** for Truelayer and input your clientId and secret in this file. These variables are required for the app to run. More details **[here](https://github.com/mayankamencherla/truelayer-interview-app#environment-variables)**.
 
 5. Set up redis on your machine from **[here](https://redis.io/topics/quickstart)**. Redis needs to be started using *redis-server* for the app to work fully.
 
@@ -63,9 +64,9 @@ $ cd server && knex migrate:latest && cd ..
 $ npm start
 ```
 
-11. Head over to localhost:3000 on your browser to use the app
+11. Head over to <a href="http://localhost:3000" target="_blank">localhost:3000</a> on your browser to use the app
 
-12. To test out the /user/transactions and /user/transactions/stats routes, the recommended tool would be **[Postman](https://www.getpostman.com/apps)**
+12. To test out the <a href="http://localhost:3000/user/transactions" target="_blank">/user/transactions</a> and <a href="http://localhost:3000/user/transactions/stats" target="_blank">/user/transactions/stats</a> routes, the recommended tool would be **[Postman](https://www.getpostman.com/apps)**
 
 13. After setting up the app locally, you could alternatively run the app via Docker. Please use the commands below to do that:
 ```bash
@@ -141,21 +142,24 @@ Some key environment variables are listed and explained below:
 2. When the app token is sent across to the API's, during the authentication step, we decrypt the encrypted Truelayer tokens using the AES-256-CTR algorithm again before sending it to Truelayer for further processing
 
 3. There is currently a security breach in the methodology used above. This is outlined below:
-> Note: CTR mode requires that every encryption / decryption must happen with a unique secure IV, that must be generated specifically for that flow. Currently, this is not the case, as we are re-using the same IV based on the environment variable. Ideally, every time an IV has been used for encryption and decryption together, a new secure IV must be generated, and used for encryption of the access token. After this, the IV must be encrypted using a public key encryption mode like RSA, and stored in the DB along with the newly encrypted tokens. During authentication, the IV must be decrypted using RSA along with the private key , and then be used to decrypt the tokens before sending it to Truelayer's APIs.
+> Note: CTR mode requires that every encryption / decryption must happen with a unique secure IV. An IV used once to encrypt an access_token, can only be used once to decrypt it for usage, and then should be discarded. A new IV must be generated each time after the old one is used, and must be used to re-encrypt the access_token, and so on. Currently, this is not the case, as the same IV is used over and over again. Another industry standard encryption scheme for this use case is the **[AES-GCM](https://crypto.stanford.edu/RealWorldCrypto/slides/gueron.pdf)** algorithm, which is an envelope encryption algorithm for authenticated encryption.
 
 ## API's available on this app
 > This app supports 3 API's currently
 
-1. `GET /`
+1. GET <a href="http://localhost:3000" target="_blank">/</a>
     - allows you to sign up on the app using Truelayer's oAuth2.0 authentication / authorization flow.
     - Returns an app auth token as a header (`x-auth`)
+    - The returned header must be stored to make subsequent requests on behalf of the registered user.
 
-2. `GET /user/transactions`
+2. GET <a href="http://localhost:3000/user/transactions" target="_blank">/user/transactions</a>
     - allows you to fetch signed up user's transactions using app token generated in the step above.
     - Valid app token must be sent as `x-auth` header and is used to authenticate the user.
     - Programmatically check the `x-auth` header in the response to ensure new token is saved when generated. New token token generation happens when Truelayer access token is expired.
+    - The API returns all of the user's transactions across accounts
 
-3. `GET /user/transactions/stats`
+3. GET <a href="http://localhost:3000/user/transactions/stats" target="_blank">/user/transactions/stats</a>
     - allows you to generate statistics based on the transactions saved in the API above.
     - Valid app token must be sent as `x-auth` header and is used to authenticate the user.
     - API must be called after user/transactions API has been called at least once, as this API simply pulls the information out from the DB / Redis
+    - The API returns the user's transaction stats grouped by transaction category, across accounts

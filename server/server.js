@@ -5,6 +5,7 @@ require("module-alias/register");
 const fs                             = require('fs');
 const http                           = require('http');
 const path                           = require('path');
+const RateLimit                      = require('express-rate-limit');
 
 // 3rd party libraries
 const express                        = require('express');
@@ -13,6 +14,16 @@ const bodyParser                     = require('body-parser');
 // server
 const app            = express();
 const server         = http.createServer(app);
+
+// Each ip limited to 100 requests / 15 minutes with 0 delay
+var limiter = new RateLimit({
+  windowMs: 15*60*1000,
+  max: 100,
+  delayMs: 0
+});
+
+//  apply to all requests
+app.use(limiter);
 
 // We ensure that every request is a json, as this is a JSON API
 app.use(bodyParser.json());
