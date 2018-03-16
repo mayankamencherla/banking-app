@@ -44,7 +44,7 @@ $ cp .env.sample .env
 
 7. Log in to your mysql instance locally, and run the following commands:
 ```sql
-mysql> DROP DATABASE banking_app;
+mysql> DROP DATABASE IF EXISTS banking_app;
 mysql> CREATE DATABASE banking_app;
 ```
 
@@ -55,7 +55,7 @@ $ cd server && cp knexfile-sample.js knexfile.js && cd ..
 
 9. The final step in setting up the DB is to run migrations. Please use the following command from the app's root directory:
 ```bash
-$ cd server && knex:migrate latest && cd ..
+$ cd server && knex migrate:latest && cd ..
 ```
 
 10. Run the app on localhost by typing the following command:
@@ -65,10 +65,11 @@ $ npm start
 
 11. Head over to localhost:3000 on your browser to use the app
 
-12. To test out the /user/transactions and /user/statistics routes, the recommended tool would be **[Postman](https://www.getpostman.com/apps)**
+12. To test out the /user/transactions and /user/transactions/stats routes, the recommended tool would be **[Postman](https://www.getpostman.com/apps)**
 
-13. After setting up the app locally, you could alternatively run the app via Docker. Please use the command below to do that:
+13. After setting up the app locally, you could alternatively run the app via Docker. Please use the commands below to do that:
 ```bash
+$ sudo docker-compose build
 $ sudo docker-compose up
 ```
 
@@ -89,11 +90,18 @@ $ npm test
 ```
 
 ## Run using **[Docker](https://hub.docker.com/)**
-> The following commands will help you use the app in no time.
+
+The docker image for this app is available for download from our docker hub. You must have Docker installed in your
+system. Docker has extensive <a href="https://docs.docker.com/installation/" target="_blank">installation guideline for
+popular operating systems</a>. Choose your operating system and follow the instructions.
+
+> Ensure you that you have docker installed and running in your system before proceeding with next steps. A quick test
+> to see if docker is installed correctly is to execute the command `docker run hello-world` and it should run without
+> errors.
 
 1. Set up the MySQL container
 ```bash
-$ sudo docker run -e MYSQL_DATABASE=banking_app MYSQL_ROOT_PASSWORD=password -d --name mysql mayankamencherla/bankingapp_mysql
+$ sudo docker run -e MYSQL_DATABASE='banking_app' -e MYSQL_ROOT_PASSWORD='password' -d --name mysql mayankamencherla/bankingapp_mysql
 ```
 2. Set up the Redis container
 ```bash
@@ -101,7 +109,7 @@ $ sudo docker run -d --name redis redis
 ```
 3. Set up the app container and link it to the MySQL and Redis containers
 ```bash
-$ sudo docker run -e NODE_ENV=production --link mysql:mysql --link redis:redis --rm -p 3000:3000 mayankamencherla/banking_app
+$ sudo docker run -e NODE_ENV=production --link mysql:mysql --link redis:redis --rm -p 3000:3000 mayankamencherla/banking_app:second
 ```
 
 ## Logging
@@ -142,13 +150,12 @@ Some key environment variables are listed and explained below:
     - allows you to sign up on the app using Truelayer's oAuth2.0 authentication / authorization flow.
     - Returns an app auth token as a header (`x-auth`)
 
-2. `GET user/transactions`
+2. `GET /user/transactions`
     - allows you to fetch signed up user's transactions using app token generated in the step above.
-    - Valid app token must be used to authenticate user
+    - Valid app token must be sent as `x-auth` header and is used to authenticate the user.
     - Programmatically check the `x-auth` header in the response to ensure new token is saved when generated. New token token generation happens when Truelayer access token is expired.
 
-3. `GET user/statistics`
+3. `GET /user/transactions/stats`
     - allows you to generate statistics based on the transactions saved in the API above.
-    - Valid app token must be used to authenticate user
-    - Programmatically check the `x-auth` header in the response to ensure new token is saved when generated. New token token generation happens when Truelayer access token is expired.
+    - Valid app token must be sent as `x-auth` header and is used to authenticate the user.
     - API must be called after user/transactions API has been called at least once, as this API simply pulls the information out from the DB / Redis
