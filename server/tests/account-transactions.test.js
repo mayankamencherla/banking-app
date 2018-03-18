@@ -346,6 +346,55 @@ describe('Test account transactions', () => {
         expect(savedTxns.length).toEqual(12);
     });
 
+    it('should return response when transaction fetch fails for one account', async () => {
+
+        if (DataAPIClient.validateToken(process.env.ACCESS_TOKEN) === true) {
+
+            const transactions = require(__dirname + '/json/transactions-response-multiple-accounts.json');
+
+            req = {
+                originalUrl: 'random url',
+                accounts: [
+                    {'account_id': 'f1234560abf9f57287637624def390871'},
+                    {'account_id': '3487298347823749823748'},
+                ],
+                token: {
+                    app_token: 'random token',
+                    access_token: process.env.ACCESS_TOKEN,
+                },
+                user_id: 'random user id',
+            };
+
+            res = {
+                headersSent: false,
+                setHeader: function(header, value) {
+                    // Dummy function
+                    return;
+                }
+            };
+
+            nock('https://api.truelayer.com')
+                .get(`/data/v1/accounts/f1234560abf9f57287637624def390871/transactions`)
+                .reply(200, {
+                    results: transactions[0].transactions
+                })
+                .get(`/data/v1/accounts/3487298347823749823748/transactions`)
+                .reply(400, {
+                    error: 'Invalid account id'
+                });
+
+            const response = await service.getTransactionsResponse(req, res);
+
+            expect(response[0]).toEqual(transactions[0]);
+
+            expect(response[1]).toEqual({
+                account_id: '3487298347823749823748',
+                count: 0,
+                transactions: [],
+            });
+        }
+    });
+
     it('should not create a new user', async () => {
 
         // Not setting user_id in the req

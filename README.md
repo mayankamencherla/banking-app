@@ -79,7 +79,7 @@ $ npm start
 $ sudo docker-compose build
 $ sudo docker-compose up
 ```
-> Note: If the sudo docker-compose up command fails the first time you use it, please exit and retry, it should work the second time around.
+> Note: The sudo docker-compose up command would likely fail to set up MySQL the first time after running the build command. Please exit, and run the command again when this happens.
 
 ## Run tests
 1. To run tests the following command would work:
