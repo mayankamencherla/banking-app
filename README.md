@@ -11,7 +11,7 @@ secure banking API's over HTTP.
 ## Pre-requisities:
 > Some key things to set up / understand to use this app:
 
-- **[NodeJS](https://nodejs.org/en/)**
+- **[NodeJS v9](https://nodejs.org/en/)**
 - **[npm](https://www.npmjs.com/)**
 - **[Truelayer](https://console.truelayer.com/?auto=signup)**
 - **[Docker](https://hub.docker.com/)**
@@ -24,8 +24,9 @@ $ git clone https://github.com/mayankamencherla/truelayer-interview-app.git
 ## Setup Locally
 > To get the app working locally, or to run test cases, follow the instructions below.
 > After setting up the app, details on each API and how to use it can be found below in the **[API's available on this app](https://github.com/mayankamencherla/truelayer-interview-app#apis-available-on-this-app)** section.
+> If any of the commands below are denied due to a permission error, please prepend a sudo to the command.
 
-1. Navigate to the app's folder
+1. Navigate to the app's root directory
 
 2. Run the following command to install all the dependencies:
 ```bash
@@ -54,9 +55,14 @@ mysql> CREATE DATABASE banking_app;
 $ cd server && cp knexfile-sample.js knexfile.js && cd ..
 ```
 
-9. The final step in setting up the DB is to run migrations. Please use the following command from the app's root directory:
+9. The final step in setting up the DB is to run migrations. Please use the following commands from the app's root directory:
 ```bash
+$ npm i knex -g
 $ cd server && knex migrate:latest && cd ..
+```
+- If the command above doesn't work, please try running the command below:
+```bash
+$ npm run migrate
 ```
 
 10. Run the app on localhost by typing the following command:
@@ -73,6 +79,7 @@ $ npm start
 $ sudo docker-compose build
 $ sudo docker-compose up
 ```
+> Note: If the sudo docker-compose up command fails the first time you use it, please exit and retry, it should work the second time around.
 
 ## Run tests
 1. To run tests the following command would work:

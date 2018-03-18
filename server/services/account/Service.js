@@ -74,7 +74,10 @@ const refreshTokenIfExpired = async (req, res, token) => {
             });
 
             res.status(502).json(
-                getErrorJson(502, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
+                getErrorJson(
+                    502,
+                    errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE
+                )
             );
 
             return;
@@ -104,7 +107,10 @@ const refreshTokenIfExpired = async (req, res, token) => {
             if (res.headersSent === false) {
 
                 res.status(500).json(
-                    getErrorJson(500, errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE)
+                    getErrorJson(
+                        500,
+                        errorcodes.SERVER_ERROR_TOKEN_REFRESH_FAILURE
+                    )
                 );
             }
         }
@@ -148,7 +154,12 @@ const fetchAllUserAccounts = async (req, res) => {
 
     } catch (Error) {
 
-        returnApiFailure(req, res, Error, errorcodes.SERVER_ERROR_ACCOUNTS_FETCH_FAILURE);
+        returnApiFailure(
+            req,
+            res,
+            Error,
+            errorcodes.SERVER_ERROR_ACCOUNTS_FETCH_FAILURE
+        );
     }
 };
 
@@ -190,7 +201,12 @@ const getTransactionsResponse = async (req, res) => {
         }
     } catch (Error) {
 
-        returnApiFailure(req, res, Error, errorcodes.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE);
+        returnApiFailure(
+            req,
+            res,
+            Error,
+            errorcodes.SERVER_ERROR_TRANSATIONS_FETCH_FAILURE
+        );
     }
 };
 
@@ -335,7 +351,10 @@ const handleTransactionsEmpty = (req, res) => {
     });
 
     res.status(400).json(
-        getErrorJson(400, errorcodes.BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY)
+        getErrorJson(
+            400,
+            errorcodes.BAD_REQUEST_ERROR_TRANSACTIONS_EMPTY
+        )
     );
 };
 
@@ -414,7 +433,12 @@ const returnApiFailure = (req, res, error, errorCode) => {
     // If a response is already sent to the user, we don't resend the response
     if (res.headersSent === false) {
 
-        res.status(400).json(getErrorJson(400, errorCode));
+        res.status(400).json(
+            getErrorJson(
+                400,
+                errorCode
+            )
+        );
     }
 };
 
