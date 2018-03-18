@@ -26,7 +26,6 @@ const createUser  = (access_token, refresh_token) => {
         app_token: token,
     });
 
-    // TODO: Store access token in the redis caching layer
     return knex('user')
             .insert({
                 id: id,

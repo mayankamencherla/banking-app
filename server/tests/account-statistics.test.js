@@ -44,8 +44,6 @@ describe('Test account transaction statistics route', () => {
             .end(done);
     });
 
-    // Causing a duplicated entry during authentication for some reason!!
-    // TODO: We must fix this as soon as possible
     it('should pass authentication and fetch account statistics', (done) => {
 
         const response = require(__dirname + '/json/statistics.json');
