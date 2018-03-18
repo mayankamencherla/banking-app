@@ -14,6 +14,11 @@ const service                = require('@services/account/Service');
 const {errorcodes}           = require('@errorcodes');
 const {errormessages}        = require('@errormessages');
 const knex                   = require('knex')(require('./../knexfile'));
+const redis                  = require("redis");
+const Promise                = require('bluebird');
+
+// Create a redis client
+const client = Promise.promisifyAll(redis.createClient());
 
 // run seed before each test case
 before(() => {
@@ -324,6 +329,21 @@ describe('Test account transactions', () => {
             done();
         }
 
+    });
+
+    it('should save all account transactions into redis', async () => {
+
+        const transactions = require(__dirname + '/json/transactions-response-multiple-accounts.json');
+
+        const expectedSavedTxns = require(__dirname + '/json/redis-multiple-accounts.json');
+
+        service.saveTransactionToRedis(transactions, users[1].id);
+
+        const savedTxns = JSON.parse(await client.getAsync(`${users[1].id}_transactions`));
+
+        expect(savedTxns).toEqual(expectedSavedTxns);
+
+        expect(savedTxns.length).toEqual(12);
     });
 
     it('should not create a new user', async () => {

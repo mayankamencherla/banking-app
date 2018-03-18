@@ -477,5 +477,6 @@ module.exports = {
     getTxnCategoryStats,
     saveAccountTransactions,
     fetchAllUserAccounts,
-    getUserTransactions
+    getUserTransactions,
+    saveTransactionToRedis
 };
