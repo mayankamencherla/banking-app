@@ -191,6 +191,13 @@ const getTransactionsResponse = async (req, res) => {
             app_token: token.app_token,
         });
 
+        //
+        // Caching transactions in redis for 1 day
+        // We do this so that this data can be quickly accessed
+        // in case there is a need to compute some information about it
+        //
+        saveTransactionToRedis(transactions, req.user_id);
+
         // If no errors occurred in the flow above, we can return
         // token as a header as the transactions were saved in the DB
         if (res.headersSent === false) {
@@ -269,6 +276,27 @@ const getMultipleAccountsTransactions = async (req, res) => {
 };
 
 /**
+ * Saves transactions to redis for 1 day
+ * @param  {Object} transactions
+ * @param  {string} userId
+ */
+const saveTransactionToRedis = (transactions, userId) => {
+
+    var accountTransactions = transactions.reduce((acc, accountTxns) => {
+
+        var txns = accountTxns.transactions;
+
+        return acc.concat(txns);
+    },
+    []);
+
+    client.set(`${userId}_transactions`,
+                JSON.stringify(accountTransactions),
+                'EX',
+                86400);
+};
+
+/**
  * We must save the fetched transactions to the DB.
  * We are doing this asynchronously so that API response time is reduced.
  */
@@ -315,7 +343,7 @@ const getUserTransactions = async (userId) => {
 
             logger.info({
                 code: tracecodes.FETCHED_TRANSACTIONS_FROM_REDIS,
-                transactions: JSON.parse(transactions)
+                transactions: JSON.parse(transactions),
             });
 
             return JSON.parse(transactions);

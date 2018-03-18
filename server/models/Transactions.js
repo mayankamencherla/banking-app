@@ -5,24 +5,11 @@ const {logger}                       = require('@log/logger');
 const {tracecodes}                   = require('@tracecodes');
 
 const _                              = require('lodash');
-const redis                          = require('redis');
 const envalid                        = require('envalid');
-const Promise                        = require('bluebird');
 
 const env = envalid.cleanEnv(process.env, {
     NODE_ENV      : envalid.str(),
 });
-
-let client;
-
-// Create a redis client
-if (process.env.NODE_ENV === 'production') {
-    client = Promise.promisifyAll(redis.createClient(6379, 'redis'));
-} else {
-    client = Promise.promisifyAll(redis.createClient(6379, '127.0.0.1'));
-}
-
-
 
 /**
  * Transactions is an object containining account_id and
@@ -46,7 +33,6 @@ const saveTransactions = (transactions, accountId, userId) => {
         user_id: userId
     });
 
-    // TODO: See if there's a better way to handle duplicates
     return getTransactionRowsToSaveToDb(transactions, accountId, userId)
         .then((filteredRows) => {
 
@@ -109,16 +95,6 @@ const getTransactionRowsToSaveToDb = (transactions, accountId, userId) => {
 
         return result;
     });
-
-    //
-    // Caching transactions in redis for 1 day
-    // We do this so that this data can be quickly accessed
-    // in case there is a need to compute some information about it
-    //
-    client.set(`${userId}_transactions`,
-                JSON.stringify(rows),
-                'EX',
-                86400);
 
     const transactionIds = _.map(rows, (transaction) => {
 

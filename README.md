@@ -109,7 +109,7 @@ popular operating systems</a>. Choose your operating system and follow the instr
 
 1. Set up the MySQL container
 ```bash
-$ sudo docker run -e MYSQL_DATABASE='banking_app' -e MYSQL_ROOT_PASSWORD='password' -d --name mysql mayankamencherla/bankingapp_mysql
+$ sudo docker run -e MYSQL_DATABASE='banking_app' -e MYSQL_ROOT_PASSWORD='password' -d --name mysql mayankamencherla/bankingapp_mysql:latest
 ```
 2. Set up the Redis container
 ```bash
@@ -117,7 +117,7 @@ $ sudo docker run -d --name redis redis
 ```
 3. Set up the app container and link it to the MySQL and Redis containers
 ```bash
-$ sudo docker run -e NODE_ENV=production --link mysql:mysql --link redis:redis --rm -p 3000:3000 mayankamencherla/banking_app:second
+$ sudo docker run -e NODE_ENV=production --link mysql:mysql --link redis:redis --rm -p 3000:3000 mayankamencherla/banking_app:latest
 ```
 
 ## Logging
