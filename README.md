@@ -8,6 +8,13 @@
 > This app is a backend that manages your user's financial data using Truelayer's
 secure banking API's over HTTP.
 
+<p align="center">
+	<a href="https://truelayer.com">
+		<img src="https://pbs.twimg.com/media/C4n_ff0WIAIYqNj.jpg" />
+    </a>
+	<sup><strong>Javascript / Typescript API Client Library</sup></strong>
+</p>
+
 ## Pre-requisities:
 > Some key things to set up / understand to use this app:
 
