@@ -1,6 +1,6 @@
 # My Banking App
 
-[![Build Status](https://travis-ci.org/mayankamencherla/truelayer-interview-app.svg?branch=master)](https://travis-ci.org/mayankamencherla/truelayer-interview-app)
+[![Build Status](https://travis-ci.org/mayankamencherla/banking-app.svg?branch=master)](https://travis-ci.org/mayankamencherla/banking-app)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- [![Packagist](https://img.shields.io/packagist/v/symfony/symfony.svg)]() -->
