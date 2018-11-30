@@ -12,7 +12,6 @@ secure banking API's over HTTP.
 	<a href="https://truelayer.com">
 		<img src="https://pbs.twimg.com/media/C4n_ff0WIAIYqNj.jpg" />
     </a>
-	<sup><strong>Javascript / Typescript API Client Library</sup></strong>
 </p>
 
 ## Pre-requisities:
