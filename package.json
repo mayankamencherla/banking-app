@@ -7,7 +7,9 @@
     "start": "node server/server.js",
     "migrate": "cd server && knex migrate:latest && cd ..",
     "start-docker": "nodemon server/server.js",
-    "test": "rm -rf server/storage && nyc --reporter=html --reporter=text --cache mocha server/**/*.test.js --exit"
+    "test": "rm -rf server/storage && nyc --reporter=html --reporter=text --cache mocha server/**/*.test.js --exit",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": "mayankamencherla",
   "license": "MIT",
@@ -29,7 +31,8 @@
     "truelayer-client": "^1.0.9",
     "uuid": "^3.2.1",
     "validator": "^9.4.1",
-    "winston": "^2.4.0"
+    "winston": "^2.4.0",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "expect": "^22.4.0",
@@ -50,5 +53,6 @@
     "@services": "server/services",
     "@seed": "server/tests/seed",
     "@utils": "server/utils"
-  }
+  },
+  "snyk": true
 }
