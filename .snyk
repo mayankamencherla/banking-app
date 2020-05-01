@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.13.5
+version: v1.14.1
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
@@ -10,3 +10,10 @@ patch:
         patched: '2019-07-04T00:29:32.240Z'
     - truelayer-client > request-promise > request-promise-core > lodash:
         patched: '2019-07-04T00:29:32.240Z'
+  SNYK-JS-LODASH-567746:
+    - lodash:
+        patched: '2020-05-01T00:28:16.195Z'
+    - knex > lodash:
+        patched: '2020-05-01T00:28:16.195Z'
+    - truelayer-client > request-promise > request-promise-core > lodash:
+        patched: '2020-05-01T00:28:16.195Z'
