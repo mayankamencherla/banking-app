@@ -27,10 +27,10 @@
     "mongodb": "^3.0.3",
     "mysql": "^2.15.0",
     "nodemon": "^1.17.1",
-    "redis": "^2.8.0",
+    "redis": "^3.1.1",
     "truelayer-client": "^1.0.9",
     "uuid": "^3.2.1",
-    "validator": "^9.4.1",
+    "validator": "^13.6.0",
     "winston": "^2.4.0",
     "snyk": "^1.189.0"
   },
