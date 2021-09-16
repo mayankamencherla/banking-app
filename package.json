@@ -26,7 +26,7 @@
     "module-alias": "^2.0.6",
     "mongodb": "^3.0.3",
     "mysql": "^2.15.0",
-    "nodemon": "^1.17.1",
+    "nodemon": "^2.0.3",
     "redis": "^2.8.0",
     "truelayer-client": "^1.0.9",
     "uuid": "^3.2.1",
